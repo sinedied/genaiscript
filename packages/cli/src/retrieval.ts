@@ -138,7 +138,7 @@ export async function retrievalFuzz(
   if (!filesGlobs?.length) filesGlobs = ["**"];
 
   // Default to excluding node_modules if no exclusions are provided
-  if (!excludedFiles?.length) excludedFiles = ["**/node_modules/**"];
+  if (!excludedFiles?.length) excludedFiles = ["**/node_modules/**", "**/.pnpm-store/**"];
 
   // Expand file globs and resolve the list of files
   const files = await expandFiles(filesGlobs, options);

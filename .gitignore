@@ -108,3 +108,5 @@ packages/*/src/package.json
 .gemini/settings.json
 claude_desktop_config.json
 .mcp.json
+
+.pnpm-store/
