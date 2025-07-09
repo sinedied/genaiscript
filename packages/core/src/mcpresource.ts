@@ -5,7 +5,7 @@ import { resolveBufferLike } from "./bufferlike.js";
 import { CHANGE, MCP_RESOURCE_PROTOCOL, RESOURCE_CHANGE } from "./constants.js";
 import debug from "debug";
 import { fileTypeFromBuffer } from "./filetype.js";
-import { TraceOptions } from "./trace.js";
+import type { TraceOptions } from "./trace.js";
 import { hash } from "./crypto.js";
 import { resolveFileContent } from "./file.js";
 import { redactSecrets } from "./secretscanner.js";
@@ -57,12 +57,12 @@ export class ResourceManager extends EventTarget {
   ) {
     dbg(`publishing ${typeof body}`);
     const res = await createResource(name, body, options);
-    await this.upsetResource(res.reference, res.content);
+    await this.upsertResource(res.reference, res.content);
     const { reference } = res;
     return reference.uri;
   }
 
-  async upsetResource(
+  async upsertResource(
     reference: ResourceReference,
     content: ResourceContents | undefined,
   ): Promise<void> {

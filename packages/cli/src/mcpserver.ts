@@ -9,12 +9,14 @@ import {
   deleteUndefinedValues,
   ensureDotGenaiscriptPath,
   errorMessage,
+  genaiscriptDebug,
   logVerbose,
   logWarn,
   runtimeHost,
   setConsoleColors,
   splitMarkdownTextImageParts,
   toStrictJSONSchema,
+  mcpRequestSample,
 } from "@genaiscript/core";
 import type {
   GenerationResult,
@@ -39,8 +41,8 @@ import type {
 import { applyRemoteOptions } from "./remote.js";
 import type { RemoteOptions } from "./remote.js";
 import { startProjectWatcher } from "./watch.js";
-import debug from "debug";
-const dbg = debug("genaiscript:mcp:server");
+import { workerData } from "worker_threads";
+const dbg = genaiscriptDebug("mcp:server");
 
 /**
  * Starts the MCP server.
@@ -57,13 +59,14 @@ export async function startMcpServer(
     RemoteOptions & {
       startup?: string;
     },
-) {
+): Promise<void> {
   setConsoleColors(false);
   logVerbose(`mcp server: starting...`);
 
   await ensureDotGenaiscriptPath();
   await applyRemoteOptions(options);
   const { startup } = options || {};
+  let samplingSupported = false;
 
   const watcher = await startProjectWatcher(options);
   logVerbose(`mcp server: watching ${watcher.cwd}`);
@@ -89,10 +92,30 @@ export async function startMcpServer(
       },
     },
   );
-  watcher.addEventListener("change", async () => {
-    logVerbose(`mcp server: tools changed`);
-    await server.sendToolListChanged();
-  });
+  watcher.addEventListener(
+    "change",
+    async () => {
+      logVerbose(`mcp server: tools changed`);
+      await server.sendToolListChanged();
+    },
+    false,
+  );
+  const onMessage = async (data: any, postMessage: (data: any) => void) => {
+    if (data.type === RESOURCE_CHANGE) {
+      await runtimeHost.resources.upsertResource(data.reference, data.content);
+    } else if (data.type === "chatCompletion") {
+      if (!samplingSupported) throw new Error("Sampling not supported by client");
+      // Handle chat completion messages if needed
+      dbg(`chatCompletion message received: %O`, data);
+      const { request, ...rest } = data;
+      const response = await mcpRequestSample(server, data.request);
+      const msg = { ...rest, response };
+      dbg(`chatCompletion response: %O`, msg);
+      postMessage(msg);
+    } else {
+      dbg(`unknown message type: ${data.type}`);
+    }
+  };
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     dbg(`fetching scripts from watcher`);
     const scripts = await watcher.scripts();
@@ -112,7 +135,7 @@ export async function startMcpServer(
           properties: {},
         };
         const outputSchema = responseSchema ? toStrictJSONSchema(responseSchema) : undefined;
-        if (accept !== "none")
+        if (accept !== "none") {
           scriptSchema.properties.files = {
             type: "array",
             items: {
@@ -120,6 +143,7 @@ export async function startMcpServer(
               description: `Filename or globs relative to the workspace used by the script.${accept ? ` Accepts: ${accept}` : ""}`,
             },
           };
+        }
         if (!description) logWarn(`script ${id} has no description`);
         return deleteUndefinedValues({
           name: id,
@@ -146,6 +170,8 @@ export async function startMcpServer(
         vars: vars as Record<string, string | number | boolean | object>,
         runTrace: false,
         outputTrace: false,
+        parentLanguageModel: samplingSupported,
+        onMessage,
       })) || { status: "error", error: { message: "run failed" } };
       dbg(`res: %s`, res.status);
       if (res.error) dbg(`error: %O`, res.error);
@@ -153,7 +179,7 @@ export async function startMcpServer(
       const text = res?.error?.message || (res.json ? JSON.stringify(res.json) : res.text) || "";
       dbg(`inlining images`);
       const parts = await splitMarkdownTextImageParts(text, {
-        dir: res.env.runDir,
+        dir: res.env?.runDir,
         convertToDataUri: true,
       });
       dbg(`parts: %O`, parts);
@@ -193,31 +219,42 @@ export async function startMcpServer(
     if (!resource) dbg(`resource not found: ${uri}`);
     return resource as ReadResourceResult;
   });
-  runtimeHost.resources.addEventListener(CHANGE, async () => {
-    await server.sendResourceListChanged();
-  });
-  runtimeHost.resources.addEventListener(RESOURCE_CHANGE, async (e) => {
-    const ev = e as CustomEvent<Resource>;
-    await server.sendResourceUpdated({
-      uri: ev.detail.reference.uri,
-    });
-  });
+  runtimeHost.resources.addEventListener(
+    CHANGE,
+    async () => {
+      await server.sendResourceListChanged();
+    },
+    false,
+  );
+  runtimeHost.resources.addEventListener(
+    RESOURCE_CHANGE,
+    async (e) => {
+      const ev = e as CustomEvent<Resource>;
+      await server.sendResourceUpdated({
+        uri: ev.detail.reference.uri,
+      });
+    },
+    false,
+  );
+
+  server.oninitialized = async () => {
+    dbg(`server/client connection initialized`);
+    // Check if client supports sampling
+    const clientCapabilities = server.getClientCapabilities();
+    dbg(`client capabilities: %O`, clientCapabilities);
+    samplingSupported = !!clientCapabilities?.sampling;
+
+    if (startup) {
+      logVerbose(`startup script: ${startup}`);
+      await run(startup, [], {
+        vars: {},
+        parentLanguageModel: samplingSupported,
+        onMessage,
+      });
+    }
+  };
 
   const transport = new StdioServerTransport();
   dbg(`connecting server with transport`);
   await server.connect(transport);
-
-  if (startup) {
-    logVerbose(`startup script: ${startup}`);
-    await run(startup, [], {
-      vars: {},
-      onMessage: async (data) => {
-        if (data.type === RESOURCE_CHANGE) {
-          await runtimeHost.resources.upsetResource(data.reference, data.content);
-        } else {
-          dbg(`unknown message type: ${data.type}`);
-        }
-      },
-    });
-  }
 }
