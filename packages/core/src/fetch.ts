@@ -63,9 +63,12 @@ export function parseRetryAfter(retryAfterHeader: string): number | null {
 }
 
 function parseRetryAfterHeader(response: Response) {
+  const { headers} = response || {}
+  if (!headers) return undefined;
+  
   const retryAfterHeader =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    response.headers.get?.("retry-after") || (response.headers as any)["retry-after"];
+    headers.get?.("retry-after") || (headers as any)["retry-after"];
   if (retryAfterHeader) {
     const retryAfterSeconds = parseRetryAfter(retryAfterHeader);
     if (retryAfterSeconds !== null) {
@@ -143,13 +146,14 @@ export async function createFetch(
     retries,
     retryOn: (attempt, error, response) => {
       const code: string = (error as { code?: string })?.code as string;
+      const { ok, status, } = response || {}
 
-      if (response.ok) {
-        dbgr("status %d is success, not retrying", response.status);
+      if (ok) {
+        dbgr("status %d is success, not retrying", status);
         return false;
       }
 
-      dbgr(`retry #%d, %d`, attempt, response.status);
+      dbgr(`retry #%d, %d`, attempt, status);
       if (
         code === "ECONNRESET" ||
         code === "ENOTFOUND" ||
@@ -160,7 +164,6 @@ export async function createFetch(
         return undefined;
       }
 
-      const status = response.status;
       if (retryOn?.length && !retryOn.includes(status)) {
         dbgr(`status %d not in retryOn %o, not retrying`, status, retryOn);
         return false;
