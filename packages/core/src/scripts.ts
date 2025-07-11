@@ -159,7 +159,7 @@ export async function fixGitHubCopilotInstructions(options?: {
       if (!content.ok) logVerbose(`failed to fetch ${url}`);
       text = await content.text();
       text = _fullDocsText = collapseNewlines(
-        text.replace(/^\!\[\]\(<data:image\/svg\+xml,.*$/gm, "<!-- mermaid diagram -->"),
+        text.replace(/^!\[\]\(<data:image\/svg\+xml,.*$/gm, "<!-- mermaid diagram -->"),
       );
     }
     await writeText(dn, text); // Write the GitHub Copilot prompt file

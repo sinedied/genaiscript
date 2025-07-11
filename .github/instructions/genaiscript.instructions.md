@@ -1,5 +1,6 @@
 ---
 applyTo: "**/*.genai.*"
+description: "Instructions for working with GenAIScript files"
 ---
 
 ## GenAIScript Code Generation Instructions

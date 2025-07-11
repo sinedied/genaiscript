@@ -44,7 +44,7 @@ async function main() {
     .join("")
     .replace("@version 0.0.0", `@version ${pkg.version}`);
   const githubCopilotInstructions = readFileSync(
-    "../../.genaiscript/instructions/genaiscript.instructions.md",
+    "../../.github/instructions/genaiscript.instructions.md",
     "utf-8",
   );
   const promptDefs = {
@@ -89,7 +89,11 @@ async function main() {
     "genaiscript.d.ts": genaiscriptdts,
   };
   writeFileSync(join(docsPublic, "genaiscript.d.ts"), genaiscriptdts, "utf-8");
-  writeFileSync(join(docsPublic, "copilot.instructions.md"), githubCopilotInstructions, "utf-8");
+  writeFileSync(
+    join(docsPublic, "genaiscript.instructions.md"),
+    githubCopilotInstructions,
+    "utf-8",
+  );
 
   const functions = Object.keys(promptMap)
     .sort()

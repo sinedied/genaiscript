@@ -31,7 +31,7 @@ import scriptSource from "../../../../../../samples/sample/genaisrc/samples/copi
 import src from "../../../../assets/chat-participant.png";
 import alt from "../../../../assets/chat-participant.png.txt?raw";
 import { Steps } from "@astrojs/starlight/components";
-import instructions from "../../../../../../.genaiscript/instructions/genaiscript.instructions.md?raw";
+import instructions from "../../../../../../.github/instructions/genaiscript.instructions.md?raw";
 
 GenAIScript integrates with [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)
 by providing a **chat participant** that allows you to run scripts in the context of a chat conversation,
@@ -50,6 +50,12 @@ of a [GitHub Copilot Chat](https://marketplace.visualstudio.com/items?itemName=G
 This is useful for leverage existing scripts in an interactive chat session.
 
 <Image src={src} alt={alt} loading="lazy" />
+
+:::note
+
+This feature is only available in **Ask** and **Edit** modes.
+
+:::
 
 ### Choosing which script to run
 
@@ -218,7 +224,7 @@ when you run a script. This file contains the instructions used to generate the 
   code={instructions}
   wrap={true}
   lang="md"
-  title=".genaiscript/instructions/genaiscript.instructions.md"
+  title=".github/instructions/genaiscript.instructions.md"
 />
 
 ### Augmented chat sessions
