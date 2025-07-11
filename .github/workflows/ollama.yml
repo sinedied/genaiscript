@@ -35,6 +35,9 @@ jobs:
               with:
                   node-version: "22"
                   cache: pnpm
+            - uses: dev-proxy-tools/actions/install@v1
+            - uses: dev-proxy-tools/actions/start@v1
+            - uses: dev-proxy-tools/actions/record-start@v1
             - run: pnpm install --frozen-lockfile
             - run: pnpm build:cli
             - run: pnpm install:ffmpeg
@@ -51,3 +54,5 @@ jobs:
               run: pnpm run:script video-transcript --model ollama:llama3.2:1b --out ./temp/summarize-ollama-phi3 --out-output $GITHUB_STEP_SUMMARY
               env:
                   OLLAMA_HOST: "http://localhost:11434"
+            - run: cat devproxy.log
+              if: always()
