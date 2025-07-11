@@ -83,6 +83,7 @@
         "devcli",
         "devcontainers",
         "devproxy",
+        "devproxyrc",
         "dfence",
         "docify",
         "Dockerized",
