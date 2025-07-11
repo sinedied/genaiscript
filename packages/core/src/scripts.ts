@@ -144,7 +144,7 @@ export async function fixGitHubCopilotInstructions(options?: {
     promptDefinitions[TYPE_DEFINITION_BASENAME],
   ); // Write the TypeScript definition file
   if (githubCopilotInstructions) {
-    const pdir = dotGenaiscriptPath("instructions");
+    const pdir = ".github/instructions";
     const pn = host.path.join(pdir, "genaiscript.instructions.md");
     await writeText(pn, ghInstructions); // Write the GitHub Copilot instructions file
   }
