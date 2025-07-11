@@ -40,7 +40,7 @@ jobs:
       - uses: dev-proxy-tools/actions/install@v1
       - uses: dev-proxy-tools/actions/start@v1
       - uses: dev-proxy-tools/actions/record-start@v1
-      - run: cat ./devproxyrc.json
+      - run: cat ./devproxy/devproxyrc.json
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:cli
       - run: pnpm install:ffmpeg
