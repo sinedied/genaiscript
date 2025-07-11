@@ -8,7 +8,7 @@ on:
       - "packages/core/**"
       - "packages/api/**"
       - "packages/runtime/**"
-      - "packages/sample/**"
+      - "sample/**"
       - "packages/cli/**"
 concurrency:
   group: -genai-test-${{ github.workflow }}-${{ github.ref }}

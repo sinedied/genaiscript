@@ -25,6 +25,8 @@ env:
 jobs:
     tests:
         runs-on: ubuntu-latest
+        env:
+            OLLAMA_HOST: "http://localhost:11434"
         steps:
             - uses: actions/checkout@v4
               with:
@@ -44,15 +46,9 @@ jobs:
             - run: pnpm ollama:start
             - run: pnpm whisper:start
             - run: pnpm test:ci --model ollama:llama3.2:1b --out ./temp/summarize-ollama-phi3
-              env:
-                  OLLAMA_HOST: "http://localhost:11434"
             - name: run convert-ollama-phi3
-              run: pnpm cli convert summarize --model ollama:llama3.2:1b "packages/sample/src/rag/*.md" --cache-name sum
-              env:
-                  OLLAMA_HOST: "http://localhost:11434"
+              run: pnpm cli convert summarize --model ollama:llama3.2:1b "samples/sample/src/rag/*.md" --cache-name sum
             - name: run transcribe
               run: pnpm run:script video-transcript --model ollama:llama3.2:1b --out ./temp/summarize-ollama-phi3 --out-output $GITHUB_STEP_SUMMARY
-              env:
-                  OLLAMA_HOST: "http://localhost:11434"
             - run: cat devproxy.log
               if: always()

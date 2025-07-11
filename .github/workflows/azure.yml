@@ -12,7 +12,7 @@ on:
             - ".github/workflows/azure.yml"
             - "packages/core/**/*"
             - "packages/cli/**/*"
-            - "packages/samples/**/*"
+            - "samples/**/*"
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}-azure
     cancel-in-progress: true

@@ -12,7 +12,7 @@ on:
             - ".github/workflows/anthropic.yml"
             - "packages/core/**/*"
             - "packages/cli/**/*"
-            - "packages/samples/**/*"
+            - "samples/**/*"
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}-anthropic
     cancel-in-progress: true
