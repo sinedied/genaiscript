@@ -696,6 +696,18 @@
   metadata?: Record<string, string>;
 }
 
+ interface TerminalOptions {
+  /**
+   * Disable generation of run trace.
+   */
+  disableTrace?: boolean;
+
+  /**
+   * Disables rendering a preview of the chat messages
+   */
+  disableChatPreview?: boolean;
+}
+
  interface PromptScript
   extends PromptLike,
     PromptBranding,
@@ -708,7 +720,8 @@
     GitIgnoreFilterOptions,
     ScriptRuntimeOptions,
     McpToolAnnotations,
-    MetadataOptions {
+    MetadataOptions,
+    TerminalOptions {
   /**
    * Which provider to prefer when picking a model.
    */
