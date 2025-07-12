@@ -18,8 +18,6 @@
     "genai:technical": "for file in \"src/**/*.md\"; do\nnode ../packages/cli/dist/src/index.js run technical \"$file\" --apply-edits\ndone",
     "genai:test": "node ../packages/cli/dist/src/index.js test src/**/*.md",
     "install:playwright": " pnpm exec playwright install --with-deps chromium",
-    "lint:check": "eslint src",
-    "lint:fix": "eslint src --fix --fix-type [problem,suggestion]",
     "postinstall": "pnpm install:playwright",
     "preview": "astro preview",
     "start": "astro dev --host"
