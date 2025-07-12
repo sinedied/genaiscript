@@ -1,6 +1,6 @@
 {
   "name": "genaiscript",
-  "version": "2.2.14",
+  "version": "2.2.15",
   "type": "module",
   "bin": "./dist/src/index.js",
   "files": [
