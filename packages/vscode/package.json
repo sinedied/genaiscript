@@ -5,9 +5,9 @@
     "author": {
         "name": "Microsoft Corporation"
     },
-    "displayName": "GenAIScript",
+    "displayName": "GenAIScript Insiders",
     "description": "Generative AI Scripting.",
-    "version": "2.2.13",
+    "version": "2.2.14",
     "icon": "icon.png",
     "engines": {
         "vscode": "^1.101.0"
