@@ -183,7 +183,6 @@ export async function renderMessagesToTerminal(
         : CONTROL_CHAT_COLLAPSED;
 
   messages = messages.filter((msg) => {
-    if (!preview) return false; // If preview is not enabled, filter out all messages.
     // Filter messages based on their roles.
     switch (msg.role) {
       case "system":
@@ -234,72 +233,73 @@ export async function renderMessagesToTerminal(
 
   if (metadata && preview) res.push(renderMetadata(request));
 
-  for (const msg of messages) {
-    const { role } = msg;
-    switch (role) {
-      case "system":
-        res.push(
-          wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}📙 system\n`),
-          ...(await renderMessageContent(model, msg, {
-            columns,
-            rows: msgRows(msg, system),
-          })),
-        );
-        break;
-      case "user":
-        res.push(wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}👤 user\n`));
-        res.push(
-          ...(await renderMessageContent(model, msg, {
-            columns,
-            rows: msgRows(msg, user),
-          })),
-        );
-        break;
-      case "assistant":
-        res.push(
-          wrapColor(
-            CONSOLE_COLOR_DEBUG,
-            `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}🤖 assistant ${msg.name ? msg.name : ""}\n`,
-          ),
-        );
-        if (msg.reasoning_content)
+  if (preview)
+    for (const msg of messages) {
+      const { role } = msg;
+      switch (role) {
+        case "system":
           res.push(
-            wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_UP_AND_DOWN}${BOX_RIGHT}🤔 reasoning\n`),
-            msg.reasoning_content,
-            "\n",
+            wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}📙 system\n`),
+            ...(await renderMessageContent(model, msg, {
+              columns,
+              rows: msgRows(msg, system),
+            })),
           );
-        res.push(
-          ...(await renderMessageContent(model, msg, {
-            columns,
-            rows: msgRows(msg, assistant),
-          })),
-        );
-        if (msg.tool_calls?.length)
-          res.push(...msg.tool_calls.map((call) => renderToolCall(call, { columns })));
-        break;
-      case "tool":
-        res.push(
-          wrapColor(
-            CONSOLE_COLOR_DEBUG,
-            `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}🔧 tool ${msg.tool_call_id || ""}\n`,
-          ),
-          ...(await renderMessageContent(model, msg, {
-            columns,
-            rows: msgRows(msg, undefined),
-          })),
-        );
-        break;
-      default:
-        res.push(
-          wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}${role}\n`),
-          ...(await renderMessageContent(model, YAMLStringify(msg), {
-            columns,
-            rows: msgRows(msg, undefined),
-          })),
-        );
-        break;
+          break;
+        case "user":
+          res.push(wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}👤 user\n`));
+          res.push(
+            ...(await renderMessageContent(model, msg, {
+              columns,
+              rows: msgRows(msg, user),
+            })),
+          );
+          break;
+        case "assistant":
+          res.push(
+            wrapColor(
+              CONSOLE_COLOR_DEBUG,
+              `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}🤖 assistant ${msg.name ? msg.name : ""}\n`,
+            ),
+          );
+          if (msg.reasoning_content)
+            res.push(
+              wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_UP_AND_DOWN}${BOX_RIGHT}🤔 reasoning\n`),
+              msg.reasoning_content,
+              "\n",
+            );
+          res.push(
+            ...(await renderMessageContent(model, msg, {
+              columns,
+              rows: msgRows(msg, assistant),
+            })),
+          );
+          if (msg.tool_calls?.length)
+            res.push(...msg.tool_calls.map((call) => renderToolCall(call, { columns })));
+          break;
+        case "tool":
+          res.push(
+            wrapColor(
+              CONSOLE_COLOR_DEBUG,
+              `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}🔧 tool ${msg.tool_call_id || ""}\n`,
+            ),
+            ...(await renderMessageContent(model, msg, {
+              columns,
+              rows: msgRows(msg, undefined),
+            })),
+          );
+          break;
+        default:
+          res.push(
+            wrapColor(CONSOLE_COLOR_DEBUG, `${BOX_DOWN_AND_RIGHT}${BOX_RIGHT}${role}\n`),
+            ...(await renderMessageContent(model, YAMLStringify(msg), {
+              columns,
+              rows: msgRows(msg, undefined),
+            })),
+          );
+          break;
+      }
     }
-  }
   // Join the result array into a single markdown string.
   return res.filter((s) => s !== undefined).join("");
 }
