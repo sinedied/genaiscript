@@ -366,7 +366,9 @@
     ],
     "sarif-viewer.connectToGithubCodeScanning": "on",
     "cSpell.language": "en,en-US,fr",
-    "cSpell.enableFiletypes": ["!json"],
+    "cSpell.enableFiletypes": [
+        "!json"
+    ],
     "files.associations": {
         ".gitignore.genai": "ignore"
     },
@@ -374,8 +376,15 @@
     "terminal.integrated.defaultProfile.windows": "Git Bash",
     "peacock.remoteColor": "#110f00",
     "mdmath.delimiters": "brackets",
-    "spellright.language": ["en"],
-    "spellright.documentTypes": ["markdown", "latex", "plaintext", "mdx"],
+    "spellright.language": [
+        "en"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext",
+        "mdx"
+    ],
     "spellright.parserByClass": {
         "mdx": {
             "parser": "markdown"
@@ -388,5 +397,21 @@
         "text": true,
         "plaintext": true
     },
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "augment.advanced": {
+        "mcpServers": [
+            {
+                "name": "genaiscript",
+                "command": "node",
+                "args": [
+                    "${workspaceFolder}/packages/cli/dist/src/index.js",
+                    "mcp",
+                    "--cwd",
+                    "${workspaceFolder}",
+                    "--groups",
+                    "mcp"
+                ]
+            }
+        ]
+    }
 }

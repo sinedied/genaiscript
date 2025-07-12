@@ -21,7 +21,7 @@
     "execa": "catalog:",
     "glob": "^11.0.3",
     "memorystream": "^0.3.1",
-    "playwright": "^1.53.2",
+    "playwright": "^1.54.1",
     "tslib": "catalog:",
     "zod": "catalog:"
   },

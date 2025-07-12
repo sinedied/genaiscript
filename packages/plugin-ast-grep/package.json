@@ -13,12 +13,12 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@genaiscript/core": "workspace:*",
-    "@genaiscript/runtime": "workspace:*",
-    "@ast-grep/napi": "^0.38.6",
     "@ast-grep/lang-c": "^0.0.2",
     "@ast-grep/lang-cpp": "^0.0.2",
     "@ast-grep/lang-python": "^0.0.2",
+    "@ast-grep/napi": "^0.38.7",
+    "@genaiscript/core": "workspace:*",
+    "@genaiscript/runtime": "workspace:*",
     "es-toolkit": "catalog:"
   },
   "devDependencies": {

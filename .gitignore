@@ -72,6 +72,8 @@ dev-proxy-ca.crt
 # START Ruler Generated Files
 .aider.conf.yml
 .aider.conf.yml.bak
+.augment/rules/ruler_augment_instructions.md
+.augment/rules/ruler_augment_instructions.md.bak
 .clinerules
 .clinerules.bak
 .cursor/mcp.json.bak
@@ -82,6 +84,8 @@ dev-proxy-ca.crt
 .github/copilot-instructions.md.bak
 .idx/airules.md
 .idx/airules.md.bak
+.junie/guidelines.md
+.junie/guidelines.md.bak
 .mcp.json.bak
 .openhands/config.toml
 .openhands/config.toml.bak
@@ -89,6 +93,8 @@ dev-proxy-ca.crt
 .openhands/microagents/repo.md.bak
 .vscode/mcp.json
 .vscode/mcp.json.bak
+.vscode/settings.json
+.vscode/settings.json.bak
 .windsurf/rules/ruler_windsurf_instructions.md
 .windsurf/rules/ruler_windsurf_instructions.md.bak
 AGENTS.md
