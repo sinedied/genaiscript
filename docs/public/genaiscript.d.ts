@@ -635,71 +635,12 @@
    * Red team plugin list
    * @link https://www.promptfoo.dev/docs/red-team/owasp-llm-top-10/
    */
-  plugins?: ElementOrArray<
-    OptionsOrString<
-      | "default"
-      | "nist:ai:measure"
-      | "owasp:llm"
-      | "owasp:api"
-      | "mitre:atlas"
-      | "owasp:llm:01"
-      | "owasp:llm:02"
-      | "owasp:llm:04"
-      | "owasp:llm:06"
-      | "owasp:llm:09"
-      | "contracts"
-      | "divergent-repetition"
-      | "excessive-agency"
-      | "hallucination"
-      | "harmful:chemical-biological-weapons"
-      | "harmful:child-exploitation"
-      | "harmful:copyright-violations"
-      | "harmful:cybercrime"
-      | "harmful:cybercrime:malicious-code"
-      | "harmful:graphic-content"
-      | "harmful:harassment-bullying"
-      | "harmful:hate"
-      | "harmful:illegal-activities"
-      | "harmful:illegal-drugs"
-      | "harmful:illegal-drugs:meth"
-      | "harmful:indiscriminate-weapons"
-      | "harmful:insults"
-      | "harmful:intellectual-property"
-      | "harmful:misinformation-disinformation"
-      | "harmful:non-violent-crime"
-      | "harmful:privacy"
-      | "harmful:profanity"
-      | "harmful:radicalization"
-      | "harmful:self-harm"
-      | "harmful:sex-crime"
-      | "harmful:sexual-content"
-      | "harmful:specialized-advice"
-      | "harmful:unsafe-practices"
-      | "harmful:violent-crime"
-      | "harmful:weapons:ied"
-      | "hijacking"
-      | "pii:api-db"
-      | "pii:direct"
-      | "pii:session"
-      | "pii:social"
-      | "politics"
-    >
-  >;
+  plugins?: ElementOrArray<string>;
 
   /**
    * Adversary prompt generation strategies
    */
-  strategies?: ElementOrArray<
-    OptionsOrString<
-      | "default"
-      | "basic"
-      | "jailbreak"
-      | "jailbreak:composite"
-      | "base64"
-      | "jailbreak"
-      | "prompt-injection"
-    >
-  >;
+  strategies?: ElementOrArray<string>;
 }
 
 /**
@@ -3348,8 +3289,12 @@
   | "waiting"
   | "pending";
 
- interface GitHubWorkflowRun {
+ interface GitHubNode {
   id: number;
+  node_id: string;
+}
+
+ interface GitHubWorkflowRun extends GitHubNode {
   run_number: number;
   name?: string;
   display_title: string;
@@ -3363,8 +3308,7 @@
   run_started_at?: string;
 }
 
- interface GitHubWorkflowJob {
-  id: number;
+ interface GitHubWorkflowJob extends GitHubNode {
   run_id: number;
   status: string;
   conclusion: string;
@@ -3377,8 +3321,7 @@
   content: string;
 }
 
- interface GitHubIssue {
-  id: number;
+ interface GitHubIssue extends GitHubNode {
   body?: string;
   title: string;
   number: number;
@@ -3430,8 +3373,7 @@
   created_at: string;
 }
 
- interface GitHubComment {
-  id: number;
+ interface GitHubComment extends GitHubNode {
   body?: string;
   user: GitHubUser;
   created_at: string;
@@ -3458,8 +3400,7 @@
   repository: string;
 }
 
- interface GitHubWorkflow {
-  id: number;
+ interface GitHubWorkflow extends GitHubNode {
   name: string;
   path: string;
 }
@@ -3513,6 +3454,10 @@
   assignee?: string;
   state?: "open" | "closed";
   assignees?: string[];
+  labels?: string[];
+}
+
+ interface GitHubIssueCreateOptions {
   labels?: string[];
 }
 
@@ -3635,6 +3580,23 @@
    * @param issueNumber issue number (not the issue id!). If undefined, reads value from GITHUB_ISSUE environment variable.
    */
   getIssue(issueNumber?: number | string): Promise<GitHubIssue>;
+
+  /**
+   * Assigns an existing issue to a bot user. Defaults to copilot user.
+   */
+  assignIssueToBot(
+    issue_number: number | string,
+    options?: { bot?: string },
+  ): Promise<{ id: string; title: string }>;
+
+  /**
+   * Creates a new issue or pull request on GitHub
+   */
+  createIssue(
+    title: string,
+    body: string,
+    options?: GitHubIssueCreateOptions,
+  ): Promise<GitHubIssue>;
 
   /**
    * Updates an issue or pull request on GitHub

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+/* eslint-disable no-param-reassign */
 
 import type { PaginateInterface } from "@octokit/plugin-paginate-rest";
 import {
@@ -65,6 +66,7 @@ import type {
   GitHubWorkflowRunStatus,
   PromptScript,
   WorkspaceFile,
+  GitHubIssueCreateOptions,
 } from "./types.js";
 import { Octokit } from "@octokit/rest";
 import type { Octokit as OctokitCore } from "@octokit/core";
@@ -73,6 +75,7 @@ import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { tryReadJSON } from "./fs.js";
 
 const dbg = genaiscriptDebug("github");
+const dbgql = dbg.extend("graphql");
 
 export interface GithubConnectionInfo {
   token: string;
@@ -1035,7 +1038,7 @@ export class GitHubClient implements GitHub {
       owner,
     });
     const { files, id, description, created_at } = data;
-    if (Object.values(files || {}).some((f) => f.encoding !== "utf-8" && f.encoding != "base64")) {
+    if (Object.values(files || {}).some((f) => f.encoding !== "utf-8" && f.encoding !== "base64")) {
       dbg(`unsupported encoding for gist files`);
       return undefined;
     }
@@ -1125,6 +1128,23 @@ export class GitHubClient implements GitHub {
     }
   }
 
+  async createIssue(
+    title: string,
+    body: string,
+    options?: GitHubIssueCreateOptions,
+  ): Promise<GitHubIssue> {
+    const { client, owner, repo } = await this.api();
+    dbg(`create issue`);
+    const { data } = await client.rest.issues.create({
+      ...(options || {}),
+      owner,
+      repo,
+      title,
+      body: prettifyMarkdown(dedent(body)),
+    });
+    return data;
+  }
+
   async updateIssue(
     issueNumber: number | string,
     options?: GitHubIssueUpdateOptions,
@@ -1178,6 +1198,93 @@ export class GitHubClient implements GitHub {
     });
     dbg(`updated comment %s`, data.id);
     return data;
+  }
+
+  // https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/agents/copilot-coding-agent/using-copilot-to-work-on-an-issue#assigning-an-issue-to-copilot-via-the-github-api
+  async listSuggestedActors(): Promise<{ login: string; id: string }[]> {
+    const { client, owner, repo } = await this.api();
+    dbg(`listing suggested actors for repository %s/%s`, owner, repo);
+    // https://docs.github.com/en/enterprise-cloud@latest/graphql/reference/objects#
+    const res = await this.graphql<{
+      repository: {
+        suggestedActors: { nodes: Array<{ login: string; id: string; __typename: string }> };
+      };
+    }>(`query($owner: String!, $repo: String!) {
+    repository(owner: $owner, name: $repo) {
+    suggestedActors(capabilities: [CAN_BE_ASSIGNED], first: 100) {
+      nodes {
+      login
+      __typename
+
+      ... on Bot {
+        id
+      }
+
+      ... on User {
+        id
+      }
+      }
+    }
+    }
+  }`);
+    const actors = res.repository.suggestedActors.nodes;
+    dbg(`suggested actors: %O`, actors);
+    return actors.map((a) => ({
+      login: a.login,
+      id: a.id,
+    }));
+  }
+
+  async assignIssueToBot(
+    issue_number: number | string,
+    options?: { bot?: string },
+  ): Promise<{ id: string; title: string }> {
+    // https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/agents/copilot-coding-agent/using-copilot-to-work-on-an-issue#assigning-an-issue-to-copilot-via-the-github-api
+    dbg(`assign issue to bot %O`, options);
+    // resolve issue
+    const issue = await this.getIssue(issue_number);
+    if (!issue) {
+      dbg(`issue %d not found`, issue_number);
+      return undefined;
+    }
+
+    // resolve bot
+    const { bot = "copilot-swe-agent" } = options ?? {};
+    const bots = await this.listSuggestedActors();
+    const actor = bots.find((b) => b.login === bot || b.id === bot);
+    if (!actor) {
+      dbg(`bot %s not found in suggested actors`, bot);
+      return undefined;
+    }
+    dbg(
+      `assigning issue #%d (%s) to bot @%s (%s)`,
+      issue.number,
+      issue.node_id,
+      actor.login,
+      actor.id,
+    );
+
+    // assign
+    const updated = await this.graphql(
+      dedent`mutation {
+  replaceActorsForAssignable(input: {assignableId: "${issue.node_id}" actorIds: ["${actor.id}"]}) {
+    assignable {
+      ... on Issue {
+        id
+        title
+        assignees(first: 10) {
+          nodes {
+            login
+          }
+        }
+      }
+    }
+  }
+}`,
+    );
+    const assignable = updated.replaceActorsForAssignable.assignable;
+    dbg(`assigned: %O`, assignable);
+    return assignable;
   }
 
   async listPullRequests(
@@ -1267,7 +1374,9 @@ export class GitHubClient implements GitHub {
 
   async graphql<T = any>(query: string, variables?: Record<string, any>): Promise<T> {
     const { client, owner, repo, ref } = await this.api();
-    dbg(`gql query: ${query.slice(0, 100)}...`);
+    query = dedent(query).trim();
+    dbgql(`query: %s`, query);
+    if (!query) throw new Error("GraphQL query is required");
 
     // Automatically inject current repository context if requested
     const finalVariables = deleteUndefinedValues({
@@ -1276,9 +1385,9 @@ export class GitHubClient implements GitHub {
       ref,
       ...(variables || {}),
     });
-    dbg(`gql variables: %O`, finalVariables);
+    dbgql(`variables: %O`, finalVariables);
     const result = await client.graphql<T>(query, finalVariables);
-    dbg(`gql success`);
+    dbgql(`result: %O`, result);
     return result;
   }
 
@@ -1555,11 +1664,7 @@ export class GitHubClient implements GitHub {
     });
     const workflows = await paginatorToArray(ite, count, (i) => i.data);
     dbg(`workflows: %O`, workflows);
-    return workflows.map(({ id, name, path }) => ({
-      id,
-      name,
-      path,
-    }));
+    return workflows;
   }
 
   async listBranches(options?: GitHubPaginationOptions): Promise<string[]> {
