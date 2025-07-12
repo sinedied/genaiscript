@@ -574,10 +574,6 @@ Options:
   --github-copilot-chat-client   Allow github_copilot_chat provider to connect
                                  to connected Visual Studio Code
   --no-run-trace                 Emit run trace events
-  --remote <string>              Remote repository URL to serve
-  --remote-branch <string>       Branch to serve from the remote
-  --remote-force                 Force pull from remote repository
-  --remote-install               Install dependencies from remote repository
   -p, --provider <string>        Preferred LLM provider aliases (choices:
                                  "openai", "azure", "azure_ai_inference",
                                  "azure_serverless", "azure_serverless_models",
@@ -609,10 +605,6 @@ Options:
                                  exclude
   --startup <string>             Startup script id, executed after the server is
                                  started
-  --remote <string>              Remote repository URL to serve
-  --remote-branch <string>       Branch to serve from the remote
-  --remote-force                 Force pull from remote repository
-  --remote-install               Install dependencies from remote repository
   -p, --provider <string>        Preferred LLM provider aliases (choices:
                                  "openai", "azure", "azure_ai_inference",
                                  "azure_serverless", "azure_serverless_models",
@@ -649,10 +641,6 @@ Options:
   --ids <string...>              Filter script by ids
   --startup <string>             Startup script id, executed after the server is
                                  started
-  --remote <string>              Remote repository URL to serve
-  --remote-branch <string>       Branch to serve from the remote
-  --remote-force                 Force pull from remote repository
-  --remote-install               Install dependencies from remote repository
   -p, --provider <string>        Preferred LLM provider aliases (choices:
                                  "openai", "azure", "azure_ai_inference",
                                  "azure_serverless", "azure_serverless_models",

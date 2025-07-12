@@ -72,6 +72,7 @@ import debug from "debug";
 import { githubActionConfigure } from "./githubaction.js";
 import { uniq } from "es-toolkit";
 import { compileScript } from "./typescript.js";
+import { addRemoteOptions, applyRemoteOptions } from "./remote.js";
 const dbg = genaiscriptDebug("cli");
 
 /**
@@ -100,12 +101,15 @@ export async function cli(): Promise<void> {
   }
 
   program.hook("preAction", async (cmd) => {
+    dbg(`opts: %O`, cmd.opts());
     let { cwd }: { cwd: string } = cmd.opts();
     const {
       env,
       include,
       githubWorkspace,
+      remote,
     }: {
+      remote: string;
       env: string[];
       include: string;
       githubWorkspace: boolean;
@@ -114,6 +118,7 @@ export async function cli(): Promise<void> {
     let ignoreCurrentWorkspace = false;
     if (include) includes.push(resolve(include));
     if (githubWorkspace) {
+      if (remote) throw new Error("Cannot use --github-workspace with --remote");
       const { workspaceDir } = githubActionConfigure();
       if (workspaceDir && resolve(workspaceDir) !== resolve(process.cwd())) {
         includes.push(resolve(process.cwd(), "genaisrc", "*.genai.mts"));
@@ -122,6 +127,20 @@ export async function cli(): Promise<void> {
         dbg(`github action workspace: %s`, cwd);
         GitClient.default().setGitHubWorkspace(cwd);
       }
+    }
+    if (remote) {
+      // needed to run exec
+      NodeHost.install("", {
+        include: [],
+      });
+      // clone repo
+      const remoteDir = await applyRemoteOptions(cmd.opts());
+      if (!remoteDir) throw new Error("Failed to configure remote repository");
+      includes.push(resolve(remoteDir, "**", "*.genai.mts"));
+      ignoreCurrentWorkspace = true;
+      cwd = resolve(remoteDir);
+      dbg(`remote workspace: %s`, cwd);
+      GitClient.default().setGitHubWorkspace(cwd);
     }
     if (cwd) {
       dbg(`chdir %s`, cwd);
@@ -153,6 +172,7 @@ export async function cli(): Promise<void> {
     .option("-q, --quiet", "disable verbose output")
     .option("--perf", "enable performance logging")
     .option("--github-workspace", "Use GitHub Actions workspace directory as cwd");
+  addRemoteOptions(program); // Add remote options to the program
 
   program.on("option:no-colors", () => setConsoleColors(false));
   program.on("option:quiet", () => setQuiet(true));
@@ -458,7 +478,6 @@ export async function cli(): Promise<void> {
     )
     .option("--no-run-trace", "Emit run trace events")
     .action(startServer); // Action to start the server
-  addRemoteOptions(serve); // Add remote options to the command
   addModelOptions(serve);
 
   const mcp = program.command("mcp").option("--ids <string...>", "Filter script by ids");
@@ -467,7 +486,6 @@ export async function cli(): Promise<void> {
     .alias("mcps")
     .description("Starts a Model Context Protocol server that exposes scripts as tools")
     .action(startMcpServer);
-  addRemoteOptions(mcp);
   addModelOptions(mcp);
 
   const openapi = program
@@ -485,7 +503,6 @@ export async function cli(): Promise<void> {
       "Starts an Web API server that exposes scripts as REST endpoints (OpenAPI 3.1 compatible)",
     )
     .action(startOpenAPIServer);
-  addRemoteOptions(openapi);
   addModelOptions(openapi);
   addGroupsOptions(openapi);
 
@@ -620,14 +637,6 @@ export async function cli(): Promise<void> {
   models.command("alias").description("Show model alias mapping").action(modelAliasesInfo);
 
   program.parse(); // Parse command-line arguments
-
-  function addRemoteOptions(command: Command): Command {
-    return command
-      .option("--remote <string>", "Remote repository URL to serve")
-      .option("--remote-branch <string>", "Branch to serve from the remote")
-      .option("--remote-force", "Force pull from remote repository")
-      .option("--remote-install", "Install dependencies from remote repository");
-  }
 
   function addGroupsOptions(command: Command): Command {
     return command.option(
