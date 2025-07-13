@@ -131,7 +131,8 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.d.*ts.map",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
     "genaisrc/*.genai.mts",
     "genaisrc/genaiscript.d.ts",
     "genaisrc/tsconfig.json",

@@ -5,8 +5,10 @@
   "bin": "./dist/src/index.js",
   "files": [
     "dist/",
-    "!dist/**/*.d.*ts.map",
-    "README.md"
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "README.md",
+    "LICENSE"
   ],
   "publisher": "Microsoft",
   "repository": {
