@@ -27,7 +27,7 @@ Say to you want to create an LLM script that generates a 'hello world' poem. You
 $`Write a 'hello world' poem.`;
 ```
 
-The `$` function is a template tag that creates a prompt. The prompt is then sent to the LLM (you configured), which generates the poem.
+The `$` function is a template tag that creates a prompt. The prompt is then sent to the LLM (you configured), which generates the poem. `$` is ambient and injected into the global context by the GenAIScript runtime. You don't need to import it.
 
 Let's make it more interesting by adding files, data and structured output. Say you want to include a file in the prompt, and then save the output in a file. You can write the following script:
 
@@ -42,6 +42,8 @@ $`Analyze DATA and extract data in JSON in data.json.`;
 
 The `def` function includes the content of the file, and optimizes it if necessary for the target LLM. GenAIScript script also parses the LLM output
 and will extract the `data.json` file automatically.
+
+
 
 ---
 
