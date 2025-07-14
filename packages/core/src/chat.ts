@@ -2,13 +2,15 @@
 // Licensed under the MIT License.
 
 // cspell: disable
-import { MarkdownTrace, TraceOptions } from "./trace.js";
-import { PromptImage, PromptPrediction, renderPromptNode } from "./promptdom.js";
+import type { MarkdownTrace, TraceOptions } from "./trace.js";
+import type { PromptImage, PromptPrediction } from "./promptdom.js";
+import { renderPromptNode } from "./promptdom.js";
 import { host, runtimeHost } from "./host.js";
-import { GenerationOptions } from "./generation.js";
+import type { GenerationOptions } from "./generation.js";
 import { dispose } from "./dispose.js";
 import { JSON5TryParse, JSONLLMTryParse, isJSONObjectOrArray } from "./json5.js";
-import { CancellationOptions, CancellationToken, checkCancelled } from "./cancellation.js";
+import type { CancellationOptions, CancellationToken } from "./cancellation.js";
+import { checkCancelled } from "./cancellation.js";
 import { arrayify } from "./cleaners.js";
 import { ellipse, logError, logInfo, logVerbose, logWarn, toStringList } from "./util.js";
 import { assert } from "./assert.js";
@@ -26,7 +28,7 @@ import { parseAnnotations } from "./annotations.js";
 import { errorMessage, isCancelError, serializeError } from "./error.js";
 import { createChatTurnGenerationContext } from "./runpromptcontext.js";
 import { parseModelIdentifier, traceLanguageModelConnection } from "./models.js";
-import {
+import type {
   ChatCompletionAssistantMessageParam,
   ChatCompletionContentPartImage,
   ChatCompletionMessageParam,
@@ -416,7 +418,7 @@ ${fenceMD(content, " ")}
         ...toolEdits.map((e) => {
           const { filename, ...rest } = e;
           const n = e.filename;
-          const fn = /^[^\/]/.test(n) ? host.resolvePath(projFolder, n) : n;
+          const fn = /^[^/]/.test(n) ? host.resolvePath(projFolder, n) : n;
           return { filename: fn, ...rest };
         }),
       );
@@ -559,7 +561,7 @@ async function applyRepairs(
   dbg(`validating fences with schema`);
   const invalids = fences.filter((f) => f?.validation?.schemaError);
 
-  let data: any;
+  let data: unknown;
   if (
     responseType === "json" ||
     responseType === "json_object" ||
@@ -665,7 +667,7 @@ async function structurifyChatSession(
   options: GenerationOptions,
   others?: {
     resp?: ChatCompletionResponse;
-    err?: any;
+    err?: unknown;
   },
 ): Promise<RunPromptResult> {
   const { trace, responseType, responseSchema } = options;
@@ -676,7 +678,7 @@ async function structurifyChatSession(
   const error = serializeError(err);
 
   const fences = extractFenced(text);
-  let json: any;
+  let json: unknown;
   if (
     responseType === "json" ||
     responseType === "json_object" ||
@@ -721,7 +723,8 @@ async function structurifyChatSession(
         revlogprobs?.find((lp) => lp.token === token) ??
         ({ token, logprob: NaN } satisfies Logprob),
     );
-  for (const choice of choices?.filter((c) => !isNaN(c.logprob))) {
+  const activeChoices = choices.filter((c) => !isNaN(c.logprob));
+  for (const choice of activeChoices) {
     logVerbose(`choice: ${choice.token}, ${renderLogprob(choice.logprob)}`);
   }
   if (logprobs?.length) {
@@ -880,7 +883,7 @@ async function processChatMessage(
     return undefined; // keep working
   }
 
-  let err: any;
+  let err: unknown;
   if (chatParticipants?.length) {
     dbg(`processing chat participants`);
     let needsNewTurn = false;
