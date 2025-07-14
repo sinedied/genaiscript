@@ -268,19 +268,22 @@ export async function parseTokenFromEnv(
     };
     if (!res?.value) {
       if (resolveToken) {
-        const { exitCode, stdout } = await runtimeHost.exec(
+        const { exitCode, stdout, stderr } = await runtimeHost.exec(
           undefined,
           "gh",
           ["auth", "token"],
           options,
         );
-        if (exitCode !== 0) throw new Error("Failed to resolve GitHub token");
-        res.name = "gh auth token";
-        res.value = stdout.trim();
+        if (exitCode !== 0) {
+          dbg(`gh auth token: %s`, stderr);
+        } else {
+          res.name = "gh auth token";
+          res.value = stdout.trim();
+        }
       }
       if (!res?.value)
         throw new Error(
-          "GITHUB_MODELS_TOKEN, GITHUB_MODELS_TOKEN, GITHUB_TOKEN or GH_TOKEN must be set",
+          "GitHub authentication required. Please set GITHUB_MODELS_TOKEN, GITHUB_TOKEN, or GH_TOKEN environment variable, or run 'gh auth login' to authenticate with GitHub CLI.",
         );
     }
     const org = findEnvVar(env, "", ["GITHUB_MODELS_ORG"]);
