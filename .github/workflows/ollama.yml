@@ -37,10 +37,10 @@ jobs:
         with:
           node-version: "22"
           cache: pnpm
-      - uses: dev-proxy-tools/actions/install@v1
-      - uses: dev-proxy-tools/actions/start@v1
-      - uses: dev-proxy-tools/actions/record-start@v1
-      - run: cat ./devproxy/devproxyrc.json
+      - uses: dev-proxy-tools/actions/setup@v1
+        with:
+          auto-record: true
+          report-job-summary: $GITHUB_STEP_SUMMARY
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:cli
       - run: pnpm install:ffmpeg
