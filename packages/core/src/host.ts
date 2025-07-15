@@ -18,8 +18,6 @@ import type { TokenCredential } from "@azure/identity";
 import type { McpClientManager } from "./mcpclient.js";
 import type { ResourceManager } from "./mcpresource.js";
 import type {
-  BrowserPage,
-  BrowseSessionOptions,
   ContainerHost,
   ContainerOptions,
   ContentSafety,
@@ -238,21 +236,9 @@ export interface RuntimeHost extends Host {
   ): Promise<PythonRuntime>;
 
   /**
-   * Launches a browser page
-   * @param url
-   * @param options
-   */
-  browse(url: string, options?: BrowseSessionOptions & TraceOptions): Promise<BrowserPage>;
-
-  /**
    * Cleanup all temporary containers.
    */
   removeContainers(): Promise<void>;
-
-  /**
-   * Cleanup all temporary browsers.
-   */
-  removeBrowsers(): Promise<void>;
 
   /**
    * Asks the user to select between options
@@ -297,7 +283,13 @@ export let host: Host;
 export function setHost(h: Host) {
   host = h;
 }
-export let runtimeHost: RuntimeHost;
+
+export function resolveRuntimeHost(): RuntimeHost {
+  const h = (globalThis as any).genaiscript as RuntimeHost;
+  if (!h) throw new Error("GenAIScript runtime not initialized");
+  return h;
+}
+
 /**
  * Sets the runtime host instance and updates the global host reference.
  *
@@ -307,7 +299,7 @@ export let runtimeHost: RuntimeHost;
 export function setRuntimeHost(h: RuntimeHost) {
   dbg(`set runtime host`);
   setHost(h);
-  runtimeHost = h;
+  (globalThis as any).genaiscript = h;
 }
 
 export function checkRuntime(): void {

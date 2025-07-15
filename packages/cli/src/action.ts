@@ -24,13 +24,12 @@ import {
   logInfo,
   logVerbose,
   nodeTryReadPackage,
-  runtimeHost,
   templateIdFromFileName,
   titleize,
-  toStringList,
   tryReadText,
   tryStat,
   writeText,
+  resolveRuntimeHost,
 } from "@genaiscript/core";
 import { buildProject } from "@genaiscript/core";
 import type { JSONSchemaDescribed, JSONSchemaObject, JSONSchemaString } from "@genaiscript/core";
@@ -155,7 +154,7 @@ export async function actionConfigure(
     }
     options.playwright =
       options.playwright === undefined
-        ? await shellConfirm("Will you use Playwright? (host.browser...)", {
+        ? await shellConfirm("Will you use Playwright? (browse(...)", {
             default: false,
           })
         : options.playwright;
@@ -627,10 +626,11 @@ jobs:
           author: pkg?.author,
           license: pkg?.license,
           description: script.description,
-          dependencies: {
+          dependencies: deleteUndefinedValues({
             ...(pkg?.dependencies || {}),
             genaiscript: CORE_VERSION,
-          },
+            ...(playwright ? { "@genaiscript/plugin-playwright": CORE_VERSION } : {}),
+          }),
           scripts: {
             upgrade: "npx -y npm-check-updates -u && npm install && npm run fix",
             "docker:build": `docker build -t ${owner}-${repo} .`,
@@ -659,6 +659,7 @@ jobs:
   }
 
   // upgrade dependencies
+  const runtimeHost = resolveRuntimeHost();
   await runtimeHost.exec(undefined, "node", ["run", "upgrade"], {
     cwd: out,
   });

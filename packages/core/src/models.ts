@@ -7,7 +7,7 @@ const dbg = debug("genaiscript:models");
 import { uniq } from "es-toolkit";
 import { errorMessage } from "./error.js";
 import type { ModelConfiguration } from "./host.js";
-import { runtimeHost } from "./host.js";
+import { resolveRuntimeHost } from "./host.js";
 import type { MarkdownTrace, TraceOptions } from "./trace.js";
 import { arrayify } from "./cleaners.js";
 import { toStringList } from "./util.js";
@@ -126,6 +126,7 @@ export function traceLanguageModelConnection(
   connectionToken: LanguageModelConfiguration,
 ) {
   if (!trace) return;
+  const runtimeHost = resolveRuntimeHost();
   const {
     model,
     temperature,
@@ -198,6 +199,7 @@ export function traceLanguageModelConnection(
  * @returns True if the given model identifier is an alias, otherwise false.
  */
 export function isModelAlias(model: string): boolean {
+  const runtimeHost = resolveRuntimeHost();
   const res = !!runtimeHost.modelAliases[model];
   return res;
 }
@@ -217,6 +219,7 @@ export function isModelAlias(model: string): boolean {
  */
 export function resolveModelAlias(model: string): ModelConfiguration {
   if (!model) throw new Error("Model not specified");
+  const runtimeHost = resolveRuntimeHost();
   const { modelAliases } = runtimeHost;
   const seen: string[] = [];
   let res: ModelConfiguration = {
@@ -266,6 +269,7 @@ export async function resolveModelConnectionInfo(
   configuration?: LanguageModelConfiguration;
 }> {
   const { trace, token: askToken, defaultModel, cancellationToken } = options || {};
+  const runtimeHost = resolveRuntimeHost();
   const hint = options?.model || conn.model;
   dbg(`resolving model for '${hint || ""}'`);
   // supports candidate if no model hint or hint is a model alias

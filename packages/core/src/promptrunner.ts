@@ -7,7 +7,7 @@ import type { GenerationStatus, Project } from "./server/messages.js";
 import { arrayify } from "./cleaners.js";
 import { relativePath } from "./util.js";
 import { assert } from "./assert.js";
-import { runtimeHost } from "./host.js";
+import { resolveRuntimeHost } from "./host.js";
 import { CORE_VERSION } from "./version.js";
 import { expandFiles } from "./fs.js";
 import { dataToMarkdownTable } from "./csv.js";
@@ -36,6 +36,7 @@ import type {
 } from "./types.js";
 import { genaiscriptDebug } from "./debug.js";
 import debug from "debug";
+import { dispose } from "./dispose.js";
 const runnerDbg = genaiscriptDebug("promptrunner");
 const dbg = genaiscriptDebug("env");
 
@@ -57,6 +58,7 @@ async function resolveExpansionVars(
   options: GenerationOptions,
 ): Promise<ExpansionVariables> {
   const { vars, runDir, runId, trace, applyGitIgnore } = options;
+  const runtimeHost = resolveRuntimeHost();
   const root = runtimeHost.projectFolder();
 
   assert(!!vars);
@@ -150,6 +152,7 @@ export async function runTemplate(
   assert(options !== undefined);
   assert(options.trace !== undefined);
   assert(options.outputTrace !== undefined);
+  const runtimeHost = resolveRuntimeHost();
   const { label, trace, outputTrace, cancellationToken, model, runId } = options;
   const version = CORE_VERSION;
   assert(model !== undefined);
@@ -265,7 +268,7 @@ export async function runTemplate(
       fallbackTools,
       metadata,
       stats: runStats,
-      renderChatMessages
+      renderChatMessages,
     };
     const chatResult = await executeChatSession(
       connection.configuration,
@@ -350,8 +353,8 @@ export async function runTemplate(
     return res;
   } finally {
     // Cleanup any resources like running containers or browsers
+    await dispose(Object.values(runtimeHost.userState) as AsyncDisposable[], options);
     runtimeHost.userState = {};
     await runtimeHost.removeContainers();
-    await runtimeHost.removeBrowsers();
   }
 }

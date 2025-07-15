@@ -3,7 +3,7 @@
 
 // cspell: disable
 import {
-  PromptNode,
+  type PromptNode,
   appendChild,
   createAssistantNode,
   createChatParticipant,
@@ -22,15 +22,15 @@ import {
   createFileMerge,
   createSystemNode,
   finalizeMessages,
-  PromptImage,
+  type PromptImage,
   createMcpServer,
   toDefRefName,
   resolveFenceFormat,
   createFileImageNodes,
   createMcpClient,
 } from "./promptdom.js";
-import { MarkdownTrace } from "./trace.js";
-import { GenerationOptions } from "./generation.js";
+import type { MarkdownTrace } from "./trace.js";
+import type { GenerationOptions } from "./generation.js";
 import { promptParametersSchemaToJSONSchema } from "./parameters.js";
 import { consoleLogFormat } from "./logging.js";
 import { isGlobMatch } from "./glob.js";
@@ -50,14 +50,14 @@ import { delay, uniq } from "es-toolkit";
 import {
   addToolDefinitionsMessage,
   appendSystemMessage,
-  CreateImageRequest,
-  CreateSpeechRequest,
+  type CreateImageRequest,
+  type CreateSpeechRequest,
   executeChatSession,
   mergeGenerationOptions,
   tracePromptResult,
 } from "./chat.js";
-import { CancellationToken, checkCancelled } from "./cancellation.js";
-import { ChatCompletionMessageParam } from "./chattypes.js";
+import { type CancellationToken, checkCancelled } from "./cancellation.js";
+import type { ChatCompletionMessageParam } from "./chattypes.js";
 import { resolveModelConnectionInfo } from "./models.js";
 import {
   CHAT_REQUEST_PER_MODEL_CONCURRENT_LIMIT,
@@ -77,11 +77,11 @@ import { resolveLanguageModel } from "./lm.js";
 import { concurrentLimit } from "./concurrency.js";
 import { resolveScript } from "./ast.js";
 import { dedent } from "./indent.js";
-import { runtimeHost } from "./host.js";
+import { resolveRuntimeHost } from "./host.js";
 import { writeFileEdits } from "./fileedits.js";
 import { agentAddMemory, agentCreateCache, agentQueryMemory } from "./agent.js";
 import { YAMLStringify } from "./yaml.js";
-import { Project } from "./server/messages.js";
+import type { Project } from "./server/messages.js";
 import { mergeEnvVarsWithSystem, parametersToVars } from "./vars.js";
 import { FFmepgClient } from "./ffmpeg.js";
 import { BufferToBlob } from "./bufferlike.js";
@@ -446,6 +446,7 @@ export function createChatGenerationContext(
     env: ExpansionVariables;
   },
 ): RunPromptContextNode {
+  const runtimeHost = resolveRuntimeHost();
   const { cancellationToken, infoCb, userState } = options || {};
   const { prj, env } = projectOptions;
   assert(!!env.output, "output missing");

@@ -2,15 +2,14 @@
 // Licensed under the MIT License.
 
 import type { Browser, BrowserContext, BrowserContextOptions, Page } from "playwright";
-import type { BrowserPage, BrowseSessionOptions, TraceOptions } from "@genaiscript/core";
+import type { TraceOptions } from "@genaiscript/core";
 import {
   PLAYWRIGHT_DEFAULT_BROWSER,
   createVideoDir,
   genaiscriptDebug,
-  logError,
-  logVerbose,
   uriRedact,
 } from "@genaiscript/core";
+import type { BrowserPage, BrowseSessionOptions } from "./types.js";
 const dbg = genaiscriptDebug("playwright");
 
 /**
@@ -23,14 +22,13 @@ export class BrowserManager {
   private _contexts: BrowserContext[] = []; // Stores active browser contexts
   private _pages: Page[] = []; // Stores active pages
 
-  constructor() {}
-
   /**
    * Imports the Playwright module if available.
    * @returns The imported Playwright module.
    * @throws Error if the Playwright module is not available.
    */
-  private async init() {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  private async init(): Promise<typeof import("playwright")> {
     const p = await import("playwright");
     if (!p) throw new Error("playwright installation not completed");
     return p;
@@ -43,22 +41,23 @@ export class BrowserManager {
    * @returns A promise that resolves to a Browser instance.
    */
   private async launchBrowser(options?: BrowseSessionOptions): Promise<Browser> {
+    const { browser = PLAYWRIGHT_DEFAULT_BROWSER, connectOverCDP, ...rest } = options || {};
+
     const launch = async () => {
       const playwright = await this.init();
       const engine = playwright[browser];
-      if (connectOverCDP) return await engine.connectOverCDP(connectOverCDP);
-      return await engine.launch(rest);
+      if (connectOverCDP) return engine.connectOverCDP(connectOverCDP);
+      return engine.launch(rest);
     };
 
-    const { browser = PLAYWRIGHT_DEFAULT_BROWSER, connectOverCDP, ...rest } = options || {};
-    return await launch();
+    return launch();
   }
 
   /**
    * Stops all browser instances and closes all pages.
    * Handles any errors that occur during the closure.
    */
-  async stopAndRemove() {
+  async stopAndRemove(): Promise<void> {
     const browsers = this._browsers.slice(0);
     const contexts = this._contexts.slice(0);
     const pages = this._pages.slice(0);
@@ -75,7 +74,7 @@ export class BrowserManager {
           await page.close();
         }
       } catch (e) {
-        logError(e);
+        dbg(`browsers: error closing page: ${e}`);
       }
     }
 
@@ -84,7 +83,7 @@ export class BrowserManager {
         dbg(`browsers: closing context`);
         await context.close();
       } catch (e) {
-        logError(e);
+        dbg(`browsers: error closing context: ${e}`);
       }
     }
 
@@ -94,7 +93,7 @@ export class BrowserManager {
         dbg(`browsers: closing browser`);
         await browser.close();
       } catch (e) {
-        logError(e);
+        dbg(`browsers: error closing browser: ${e}`);
       }
     }
   }
@@ -110,20 +109,20 @@ export class BrowserManager {
     const { trace, incognito, timeout, recordVideo, waitUntil, referer, connectOverCDP, ...rest } =
       options || {};
 
-    logVerbose(`browsing ${uriRedact(url)}`);
+    dbg(`browsing ${uriRedact(url)}`);
     const browser = await this.launchBrowser(options);
     let page: Page;
 
     // Open a new page in incognito mode if specified
     if (incognito || recordVideo) {
-      const options = { ...rest } as BrowserContextOptions;
+      const contextOptions = { ...rest } as BrowserContextOptions;
       if (recordVideo) {
         const dir = await createVideoDir();
         trace?.itemValue(`video dir`, dir);
-        options.recordVideo = { dir };
-        if (typeof recordVideo === "object") options.recordVideo.size = recordVideo;
+        contextOptions.recordVideo = { dir };
+        if (typeof recordVideo === "object") contextOptions.recordVideo.size = recordVideo;
       }
-      const context = await browser.newContext(options);
+      const context = await browser.newContext(contextOptions);
       this._contexts.push(context);
       page = await context.newPage();
     } else {

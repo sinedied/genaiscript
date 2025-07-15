@@ -38,7 +38,8 @@ In this blog post, we'll dive into a practical example showcasing how to leverag
 The following snippet provides a concise and effective way to analyze a web page's content using GenAIScript:
 
 ```javascript
-const page = await host.browse("https://bing.com");
+import { browse } from "@genaiscript/plugin-playwright";
+const page = await browse("https://bing.com");
 const screenshot = await page.screenshot();
 defImages(screenshot, { maxWidth: 800 });
 const text = parsers.HTMLtoMarkdown(await page.content());
@@ -51,10 +52,11 @@ Let's break down what each line of this script does:
 #### 1. Navigating to a Web Page
 
 ```javascript
-const page = await host.browse("https://example.com");
+import { browse } from "@genaiscript/plugin-playwright";
+const page = await browse("https://example.com");
 ```
 
-This line automatically navigates to the specified URL (`https://example.com`). The `host.browse` function is a powerful feature of GenAIScript that initializes a browser session and returns a page object for further interactions.
+This line automatically navigates to the specified URL (`https://example.com`). The `browse` function is a powerful feature of GenAIScript that initializes a browser session and returns a page object for further interactions.
 
 #### 2. Taking a Screenshot
 

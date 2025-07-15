@@ -9,7 +9,7 @@ import { GENAISCRIPTIGNORE, GIT_DIFF_MAX_TOKENS, GIT_IGNORE_GENAI } from "./cons
 import { llmifyDiff } from "./llmdiff.js";
 import { resolveFileContents } from "./file.js";
 import { tryReadText, tryStat } from "./fs.js";
-import { runtimeHost } from "./host.js";
+import { resolveRuntimeHost } from "./host.js";
 import { shellParse, shellQuote } from "./shell.js";
 import { arrayify } from "./cleaners.js";
 import { ellipse, logVerbose } from "./util.js";
@@ -190,6 +190,7 @@ export class GitClient implements Git {
   ): Promise<string> {
     const { valueOnError } = options || {};
 
+    const runtimeHost = resolveRuntimeHost();
     await this.configGlobalAddSafeDirectory();
 
     const opts: ShellOptions = {
@@ -228,6 +229,7 @@ export class GitClient implements Git {
     },
   ): Promise<WorkspaceFile[]> {
     dbg(`listing files with scope: ${scope}`);
+    const runtimeHost = resolveRuntimeHost();
     scope = scope || "modified";
     const { askStageOnEmpty } = options || {};
     const paths = arrayify(options?.paths, { filterEmpty: true });
@@ -420,6 +422,7 @@ export class GitClient implements Git {
      */
     maxTokensFullDiff?: number;
   }): Promise<string> {
+    const runtimeHost = resolveRuntimeHost();
     const paths = arrayify(options?.paths, { filterEmpty: true });
     const excludedPaths = await this.resolveExcludedPaths(options);
     const {
@@ -531,6 +534,7 @@ ${await this.diff({ ...options, nameOnly: true })}
       directory?: string;
     },
   ): Promise<GitClient> {
+    const runtimeHost = resolveRuntimeHost();
     dbg(`cloning repository: ${repository}`);
     // eslint-disable-next-line prefer-const
     let { branch, force, install, depth, directory, ...rest } = options || {};

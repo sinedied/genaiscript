@@ -9,7 +9,8 @@ import {
   TRACE_FILENAME,
   dotGenaiscriptPath,
   groupBy,
-  runtimeHost,
+  resolveRuntimeHost,
+  setRuntimeHost,
 } from "@genaiscript/core";
 
 /**
@@ -28,6 +29,7 @@ import {
  *   - trace: The size of the `trace.md` file in the run, or 0 if it does not exist.
  */
 export async function collectRuns(options?: { scriptid?: string }) {
+  const runtimeHost = resolveRuntimeHost();
   const { scriptid } = options || {};
   const runsDir = dotGenaiscriptPath(RUNS_DIR_NAME);
   const runsState = await runtimeHost.statFile(runsDir);
