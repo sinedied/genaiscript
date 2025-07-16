@@ -35,7 +35,7 @@
     "zod": "catalog:"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:prompts && tshy",
+    "build": "npm run build:prompts && tshy",
     "build:prompts": "node bundleprompts.mjs",
     "clean": "rimraf dist",
     "format:check": "prettier --config ../../.prettierrc.json --ignore-path ../../.prettierignore --check  \"src/**/*.{ts,cts,mts}\" \"test/**/*.{ts,cts,mts}\" \"*.{js,cjs,mjs,json}\" ",
@@ -43,7 +43,7 @@
     "lint:check": "eslint src test",
     "lint:fix": "eslint src test --fix --fix-type [problem,suggestion]",
     "pack": "npm pack 2>&1",
-    "prepack": "npm run build",
+    "prepack": "npm run clean && npm run build",
     "test": "vitest --run"
   },
   "dependencies": {

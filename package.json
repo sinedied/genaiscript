@@ -74,7 +74,7 @@
     "prd:visuals": "node packages/cli/dist/src/index.js run prd-visuals --pull-request-description --model github:gpt-4.1 --vars base=dev",
     "prd:zine": "node packages/cli/dist/src/index.js run prd-zine --pull-request-description --model github:gpt-4.1 --vars base=dev",
     "prr": "node packages/cli/dist/src/index.js run prr --pull-request-reviews --model github:gpt-4.1 --vars base=dev",
-    "release": "pnpm release:github && pnpm release:npm",
+    "release": "pnpm -r clean && pnpm release:github && pnpm release:npm",
     "release:github": "pnpm compile && pnpm dlx release-it && pnpm patch-versions && pnpm compile && pnpm package && pnpm release:vsix && pnpm commit-versions",
     "release:npm": "zx scripts/npm-publish.mjs",
     "release:vsix": "pnpm dlx release-it --no-increment --no-git --github.release --github.update --github.assets=packages/vscode/genaiscript.vsix --no-github.draft",
