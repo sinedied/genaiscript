@@ -24,8 +24,6 @@ import type {
   ContentSafetyProvider,
   ModelOptions,
   Path,
-  PythonRuntime,
-  PythonRuntimeOptions,
   SerializedError,
   ShellOutput,
   ShellSelectChoice,
@@ -141,8 +139,6 @@ export interface Host {
   server: ServerManager;
   path: Path;
 
-  createUTF8Decoder(): UTF8Decoder;
-  createUTF8Encoder(): UTF8Encoder;
   projectFolder(): string;
   resolvePath(...segments: string[]): string;
 
@@ -227,13 +223,6 @@ export interface RuntimeHost extends Host {
    * @param options
    */
   container(options: ContainerOptions & TraceOptions): Promise<ContainerHost>;
-
-  /**
-   * Instantiates a python evaluation environment
-   */
-  python(
-    options?: PythonRuntimeOptions & TraceOptions & CancellationOptions,
-  ): Promise<PythonRuntime>;
 
   /**
    * Cleanup all temporary containers.

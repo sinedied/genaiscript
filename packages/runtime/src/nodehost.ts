@@ -29,7 +29,6 @@ import {
   createAzureContentSafetyClient,
   createAzureTokenResolver,
   createNodePath,
-  createPythonRuntime,
   createWorkspaceFileSystem,
   defaultModelConfigurations,
   errorMessage,
@@ -60,8 +59,6 @@ import type {
   ModelConfiguration,
   ModelConfigurations,
   Project,
-  PythonRuntime,
-  PythonRuntimeOptions,
   ResponseStatus,
   ShellOptions,
   TraceOptions,
@@ -423,12 +420,6 @@ export class NodeHost extends EventTarget implements RuntimeHost {
         break;
     }
   }
-  createUTF8Decoder(): UTF8Decoder {
-    return new TextDecoder("utf-8");
-  }
-  createUTF8Encoder(): UTF8Encoder {
-    return new TextEncoder();
-  }
   projectFolder(): string {
     return this.path.resolve(".");
   }
@@ -528,13 +519,6 @@ export class NodeHost extends EventTarget implements RuntimeHost {
       throw new NotSupportedError(`content safety ${id} not supported`);
     }
     return undefined;
-  }
-
-  /**
-   * Instantiates a python evaluation environment
-   */
-  python(options?: PythonRuntimeOptions & TraceOptions): Promise<PythonRuntime> {
-    return createPythonRuntime(options);
   }
 
   async exec(
