@@ -1,7 +1,7 @@
 {
   "name": "@genaiscript/plugin-playwright",
   "private": false,
-  "version": "2.2.16",
+  "version": "2.3.0",
   "main": "./dist/commonjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/commonjs/index.d.ts",
