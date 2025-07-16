@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { normalizeFloat, trimTrailingSlash } from "./cleaners.js";
+import { deleteUndefinedValues, normalizeFloat, trimTrailingSlash } from "./cleaners.js";
 import {
   ANTHROPIC_API_BASE,
   GITHUB_MODELS_BASE,
@@ -148,16 +148,17 @@ export async function parseDefaultsFromEnv(env: Record<string, string>) {
     runtimeHost.setModelAlias("env", "large", env.INPUT_MODEL);
   }
 
-  const rx =
-    /^(GENAISCRIPT(_DEFAULT)?_(?<id>[A-Z0-9_-]+)_MODEL|(INPUT_)?MODEL_(?<id2>[A-Z0-9_-]+))$/i;
-  for (const kv of Object.entries(env)) {
+  const rx = /^(GENAISCRIPT(_DEFAULT)?|INPUT)_MODEL_(?<id>[A-Z0-9_-]+)$/i;
+  const entries = Object.entries(env);
+  dbg(`envs: %O`, Object.keys(env));
+  for (const kv of entries) {
     const [k, v] = kv;
     const m = rx.exec(k);
     if (!m) {
       continue;
     }
-    const id = (m.groups.id || m.groups.id2).toLowerCase();
-    dbg(`found ${id} = ${v}`);
+    const id = m.groups.id.toLowerCase();
+    dbg(`found %s -> %s = %s`, k, id, v);
     if (id === "alias") {
       // special handling for alias, try to parse as YAML, INI
       const aliases = YAMLTryParse(v.trim());
@@ -679,39 +680,6 @@ export async function parseTokenFromEnv(
     };
   }
 
-  const prefixes = [
-    tag ? `${provider}_${model}_${tag}` : undefined,
-    provider ? `${provider}_${model}` : undefined,
-    provider ? provider : undefined,
-    model,
-  ]
-    .filter((p) => p)
-    .map((p) => p.toUpperCase().replace(/[^a-z0-9]+/gi, "_"));
-  for (const prefix of prefixes) {
-    const modelKey = findEnvVar(env, prefix, TOKEN_SUFFIX);
-    const modelBase = findEnvVar(env, prefix, BASE_SUFFIX);
-    if (modelKey || modelBase) {
-      const token = modelKey?.value || "";
-      const base = trimTrailingSlash(modelBase?.value);
-      const version = env[prefix + "_API_VERSION"];
-      const source = `env: ${prefix}_API_...`;
-      const type: OpenAIAPIType = "openai";
-      if (base && !URL.canParse(base)) {
-        throw new Error(`${modelBase} must be a valid URL`);
-      }
-      return {
-        provider,
-        model,
-        modelId,
-        token,
-        base,
-        type,
-        version,
-        source,
-      } satisfies LanguageModelConfiguration;
-    }
-  }
-
   if (provider === MODEL_PROVIDER_SGLANG) {
     dbg(`processing MODEL_PROVIDER_SGLANG`);
     const base = findEnvVar(env, "SGLANG", BASE_SUFFIX)?.value || SGLANG_API_BASE;
@@ -853,6 +821,44 @@ export async function parseTokenFromEnv(
       base: undefined,
       token: provider,
     };
+  }
+
+  // generic
+  const prefixes = [
+    tag ? `${provider}_${model}_${tag}` : undefined,
+    provider ? `${provider}_${model}` : undefined,
+    provider ? provider : undefined,
+    model,
+  ]
+    .filter((p) => p)
+    .map((p) => p.toUpperCase().replace(/[^a-z0-9]+/gi, "_"));
+  for (const prefix of prefixes) {
+    const modelKey = findEnvVar(env, prefix, TOKEN_SUFFIX);
+    const modelBase = findEnvVar(env, prefix, BASE_SUFFIX);
+    if (modelKey || modelBase) {
+      const token = modelKey?.value || "";
+      const base = trimTrailingSlash(modelBase?.value);
+      const version = env[prefix + "_API_VERSION"];
+      const type: OpenAIAPIType = (env[prefix + "API_TYPE"] as OpenAIAPIType) || "openai";
+      const azureCredentialsType = env[prefix + `_API_CREDENTIALS`]
+        ?.toLowerCase()
+        .trim() as AzureCredentialsType;
+      if (base && !URL.canParse(base)) {
+        throw new Error(`${modelBase} must be a valid URL`);
+      }
+      const source = `env: ${prefix}_API_...`;
+      return deleteUndefinedValues({
+        provider,
+        model,
+        modelId,
+        token,
+        base,
+        type,
+        azureCredentialsType,
+        version,
+        source,
+      }) satisfies LanguageModelConfiguration;
+    }
   }
 
   dbg(`no matching provider found, returning undefined`);
