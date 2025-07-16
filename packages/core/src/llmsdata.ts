@@ -411,12 +411,12 @@ export default {
       topLogprobs: false,
       prediction: false,
       aliases: {
-        large: "claude-3-7-sonnet-latest",
+        large: "claude-sonnet-4-0",
         small: "claude-3-5-haiku-latest",
-        vision: "claude-3-7-sonnet-latest",
+        vision: "claude-sonnet-4-0",
         vision_small: "claude-3-5-sonnet-latest",
-        reasoning: "claude-3-7-sonnet-latest:high",
-        reasoning_small: "claude-3-7-sonnet-latest:low",
+        reasoning: "claude-sonnet-4-0:high",
+        reasoning_small: "claude-sonnet-4-0:low",
       },
       reasoningEfforts: {
         low: 1024,
@@ -745,7 +745,7 @@ export default {
       topP: false,
       transcribe: false,
       url: "https://modelcontextprotocol.io/docs/concepts/sampling",
-      logitBias: false,      
+      logitBias: false,
       aliases: {
         large: "gpt-4o",
         small: "gpt-4o-mini",
