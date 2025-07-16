@@ -1,20 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { TextSplitter, TextSplitterConfig, unchunk } from "../src/textsplitter.js";
-import { describe, test, assert } from "vitest";
+import { TextSplitter, type TextSplitterConfig, unchunk } from "../src/textsplitter.js";
+import { describe, test, assert, beforeEach } from "vitest";
 
 import { resolveTokenEncoder } from "../src/encoders.js";
 import { glob } from "glob";
 import { readFile } from "fs/promises";
-import { text } from "node:stream/consumers";
+import { TestHost } from "../src/testhost.js";
 
 describe("TextSplitter", async () => {
+  TestHost.install();
   const defaultConfig: Partial<TextSplitterConfig> = {
     chunkSize: 10,
     chunkOverlap: 2,
     tokenizer: await resolveTokenEncoder("gpt-4o"),
   };
+
+  beforeEach(async () => {
+    TestHost.install();
+  });
 
   test("TextSplitter split undefined", () => {
     const textSplitter = new TextSplitter(defaultConfig);

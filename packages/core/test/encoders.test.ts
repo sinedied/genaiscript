@@ -1,11 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { describe, test, assert } from "vitest";
+import { describe, test, assert, beforeEach } from "vitest";
 import { chunk, resolveTokenEncoder } from "../src/encoders.js";
 import { dedent } from "../src/indent.js";
+import { TestHost } from "../src/testhost.js";
 
 describe("resolveTokenEncoder", () => {
+  beforeEach(async () => {
+    TestHost.install();
+  });
   test("gpt-3.5-turbo", async () => {
     const encoder = await resolveTokenEncoder("openai:gpt-3.5-turbo");
     const result = encoder.encode("test line");

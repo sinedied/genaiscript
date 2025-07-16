@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import debug from "debug";
-const dbg = debug("genaiscript:encoders");
-
 // Import the function to parse model identifiers
 import { parseModelIdentifier } from "./models.js";
 import { resolveRuntimeHost } from "./host.js";
@@ -15,6 +12,8 @@ import { assert } from "./assert.js";
 import { TextSplitter } from "./textsplitter.js";
 import type { Awaitable, TextChunk, TextChunkerConfig, Tokenizer, WorkspaceFile } from "./types.js";
 import api, { encode, decode } from "gpt-tokenizer/model/gpt-4o";
+import { genaiscriptDebug } from "./debug.js";
+const dbg = genaiscriptDebug("encoders");
 
 /**
  * Resolves the token encoder for a specified model identifier.
