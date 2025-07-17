@@ -1693,6 +1693,11 @@ export interface LineNumberingOptions {
    * Prepend each line with a line numbers. Helps with generating diffs.
    */
   lineNumbers?: boolean;
+
+  /**
+   * Offset when number lines in output
+   */
+  lineNumbersStart?: number;
 }
 
 export interface FenceOptions extends LineNumberingOptions, FenceFormatOptions {

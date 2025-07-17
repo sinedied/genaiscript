@@ -1693,6 +1693,11 @@
    * Prepend each line with a line numbers. Helps with generating diffs.
    */
   lineNumbers?: boolean;
+
+  /**
+   * Offset when number lines in output
+   */
+  lineNumbersStart?: number;
 }
 
  interface FenceOptions extends LineNumberingOptions, FenceFormatOptions {

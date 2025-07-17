@@ -336,15 +336,16 @@ export function createDefDiff(
 
 // Function to render a definition node to a string.
 function renderDefNode(def: PromptDefNode): string {
-  const { name, resolved, language, lineNumbers, schema, prediction } = def;
+  const { name, resolved, language, lineNumbers, lineNumbersStart, schema, prediction } = def;
   const { filename, content = "" } = resolved;
   let fenceFormat = def.fenceFormat;
 
   const norm = (s: string, lang: string) => {
-    s = (s || "").replace(/\n*$/, "");
-    if (s && lineNumbers && !prediction) s = addLineNumbers(s, { language: lang });
-    if (s) s += "\n";
-    return s;
+    let r = (s || "").replace(/\n*$/, "");
+    if (r && lineNumbers && !prediction)
+      r = addLineNumbers(r, { language: lang, startLine: lineNumbersStart });
+    if (r) r += "\n";
+    return r;
   };
 
   const dtype = language || /\.([^.]+)$/i.exec(filename)?.[1] || "";
