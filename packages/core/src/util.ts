@@ -2,10 +2,8 @@
 // Licensed under the MIT License.
 
 import { HTTPS_REGEX } from "./constants.js";
-import { isCancelError, serializeError } from "./error.js";
-import { host } from "./host.js";
-import { YAMLStringify } from "./yaml.js";
-import type { SerializedError } from "./types.js";
+import { resolveRuntimeHost } from "./host.js";
+export * from "./log.js";
 
 /**
  * Compares two strings lexicographically.
@@ -16,7 +14,7 @@ import type { SerializedError } from "./types.js";
  *          and 1 if the first string is greater than the second.
  */
 export function strcmp(a: string, b: string) {
-  if (a == b) return 0;
+  if (a === b) return 0;
   if (a < b) return -1;
   else return 1;
 }
@@ -114,65 +112,12 @@ export function fromHex(hex: string) {
 export function relativePath(root: string, fn: string) {
   // ignore empty path or urls
   if (!fn || HTTPS_REGEX.test(fn)) return fn;
-  const afn = host.path.resolve(fn);
+  const runtimeHost = resolveRuntimeHost();
+  const afn = runtimeHost.path.resolve(fn);
   if (afn.startsWith(root)) {
     return afn.slice(root.length).replace(/^[/\\]+/, "");
   }
   return fn;
-}
-
-/**
- * Logs an informational message.
- *
- * @param msg - The message to log. Must be a string containing the information to log.
- */
-export function logInfo(msg: string) {
-  host.log("info", msg);
-}
-
-/**
- * Logs a verbose debug message using the host logging system.
- *
- * @param msg - The message to be logged at debug level.
- */
-export function logVerbose(msg: string) {
-  host.log("debug", msg);
-}
-
-/**
- * Logs a warning message to the host system's logger.
- *
- * @param msg - The warning message to log. Should be a descriptive string providing details about the warning.
- */
-export function logWarn(msg: string) {
-  host.log("warn", msg);
-}
-
-/**
- * Logs an error message with additional debug information if available.
- *
- * @param msg - The error message, error object, or serialized error to log.
- *              If the message indicates a cancellation, it is logged as a warning.
- *
- * Details:
- * - Extracts error details such as message, name, and stack from the error object.
- * - Logs the error message at "error" severity.
- * - Logs the stack trace and additional serialized error data at "debug" severity if present.
- * - If the error is a cancellation, logs the message at "warn" severity instead.
- */
-export function logError(msg: string | Error | SerializedError) {
-  const err = serializeError(msg);
-  const { message, name, stack, ...e } = err || {};
-  if (isCancelError(err)) {
-    host.log("warn", message || "cancelled");
-    return;
-  }
-  host.log("error", message ?? name ?? "error");
-  if (stack) host.log("debug", stack);
-  if (Object.keys(e).length) {
-    const se = YAMLStringify(e);
-    host.log("debug", se);
-  }
 }
 
 /**
@@ -182,7 +127,7 @@ export function logError(msg: string | Error | SerializedError) {
  * @returns A single array containing all elements from the input arrays in order.
  */
 export function concatArrays<T>(...arrays: T[][]): T[] {
-  if (arrays.length == 0) return [];
+  if (arrays.length === 0) return [];
   return arrays[0].concat(...arrays.slice(1));
 }
 

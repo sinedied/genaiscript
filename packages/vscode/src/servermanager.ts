@@ -20,11 +20,10 @@ import { semverParse, semverSatisfies } from "../../core/src/semver";
 import { resolveCli } from "./config";
 import { deleteUndefinedValues } from "../../core/src/cleaners";
 import type { ServerManager } from "../../core/src/host";
-import { host } from "../../core/src/host";
 import { packageResolveExecute } from "../../core/src/packagemanagers";
 import { VsCodeClient } from "../../core/src/server/client";
 import { shellQuote } from "../../core/src/shell";
-import { logError, logInfo, logVerbose } from "../../core/src/util";
+import { logError, logInfo, logVerbose } from "../../core/src/log";
 import { CORE_VERSION } from "../../core/src/version";
 import { findRandomOpenPort } from "../../core/src/net";
 
@@ -193,12 +192,12 @@ export class TerminalServerManager extends EventTarget implements ServerManager 
 
     this.status = "starting";
     const config = this.state.getConfiguration();
-    const diagnostics = this.state.diagnostics;
+    const diagnostics = this.state.diagnostics;    
     const debug = diagnostics ? "*" : this.state.debug;
     const hideFromUser = !diagnostics && !!config.get("hideServerTerminal");
     const disableTrace = config.get("disableTrace") ? "--no-run-trace" : "";
     const quiet = config.get("quiet") ? "--quiet" : "";
-    const cwd = host.projectFolder();
+    const cwd =  this.state.host.projectFolder();
     await this.allocatePort();
     logVerbose(`starting server on port ${this._port} at ${cwd} (DEBUG=${debug || ""})`);
     const { cliPath, cliVersion, packageManager } = await resolveCli(this.state);
@@ -257,7 +256,7 @@ export class TerminalServerManager extends EventTarget implements ServerManager 
     this.nodeVersionValidated = true;
     return new Promise<void>((resolve) => {
       logVerbose("checking node version");
-      const cwd = host.projectFolder();
+      const cwd = this.state.host.projectFolder();
       const terminal = vscode.window.createTerminal({
         cwd,
         isTransient: true,
@@ -276,6 +275,7 @@ export class TerminalServerManager extends EventTarget implements ServerManager 
 
     async function checkNodeCommand(terminal: vscode.Terminal): Promise<boolean> {
       if (!terminal) throw new Error("terminal not started");
+      if (!terminal.shellIntegration) return true;
       // Log all data written to the terminal for a command
       const command = terminal.shellIntegration.executeCommand("node -v");
       let output = "";

@@ -8,7 +8,7 @@ import debug from "debug";
 import { assert } from "./assert.js";
 import { arrayify } from "./cleaners.js";
 import { resolveRuntimeHost } from "./host.js";
-import { bingSearch, tavilySearch } from "./websearch.js";
+import { tavilySearch } from "./websearch.js";
 import { type RunPromptContextNode, createChatGenerationContext } from "./runpromptcontext.js";
 import type { GenerationOptions } from "./generation.js";
 import { fuzzSearch } from "./fuzzsearch.js";
@@ -26,7 +26,7 @@ import { DOCS_WEB_SEARCH_URL, VECTOR_INDEX_HASH_LENGTH } from "./constants.js";
 import { fetch } from "./fetch.js";
 import { fetchText } from "./fetchtext.js";
 import { fileWriteCached } from "./filecache.js";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { createMicrosoftTeamsChannelClient } from "./teams.js";
 import { dotGenaiscriptPath } from "./workdir.js";
 import { createCache } from "./cache.js";
@@ -117,8 +117,8 @@ export async function createPromptContext(
       grepOptions2?: WorkspaceGrepOptions,
     ) => {
       if (typeof grepOptions === "string") {
-        const p = runtimeHost.path.dirname(grepOptions).replace(/(^|\/)\*\*$/, "");
-        const g = runtimeHost.path.basename(grepOptions);
+        const p = dirname(grepOptions).replace(/(^|\/)\*\*$/, "");
+        const g = basename(grepOptions);
         grepOptions = {
           path: p || undefined,
           glob: g || undefined,
@@ -157,10 +157,10 @@ export async function createPromptContext(
       const webTrace = trace?.startTraceDetails(`🌐 web search <code>${HTMLEscape(q)}</code>`);
       try {
         let files: WorkspaceFile[];
-        if (provider === "bing") files = await bingSearch(q, { trace: webTrace, count });
+        if (provider === "bing") throw new Error("Bing search is deprecated.");
         else if (provider === "tavily") files = await tavilySearch(q, { trace: webTrace, count });
         else {
-          for (const f of [bingSearch, tavilySearch]) {
+          for (const f of [tavilySearch]) {
             files = await f(q, {
               ignoreMissingApiKey: true,
               trace: webTrace,

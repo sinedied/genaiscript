@@ -8,8 +8,8 @@ import { Uri } from "vscode";
 import type { ExtensionState } from "./state";
 import { Utils } from "vscode-uri";
 import { uniq } from "es-toolkit";
-import type { Host } from "../../core/src/host";
-import { setHost } from "../../core/src/host";
+import type { Host, RuntimeHost } from "../../core/src/host";
+import { resolveRuntimeHost, setRuntimeHost } from "../../core/src/host";
 import { arrayify } from "../../core/src/cleaners";
 import { filterGitIgnore } from "../../core/src/gitignore";
 import type { CancellationOptions } from "../../core/src/cancellation";
@@ -24,7 +24,8 @@ export class VSCodeHost extends EventTarget implements Host {
   readonly server: TerminalServerManager;
   constructor(readonly state: ExtensionState) {
     super();
-    setHost(this);
+    setRuntimeHost(this as any as RuntimeHost);
+    resolveRuntimeHost();
     this.server = new TerminalServerManager(state);
     this.state.context.subscriptions.push(this);
   }
@@ -35,7 +36,7 @@ export class VSCodeHost extends EventTarget implements Host {
     return this.state.context;
   }
   dispose() {
-    setHost(undefined);
+    setRuntimeHost(undefined);
   }
   get projectUri() {
     return vscode.workspace.workspaceFolders[0]?.uri;
@@ -93,7 +94,7 @@ export class VSCodeHost extends EventTarget implements Host {
             ? "file"
             : stat.type === vscode.FileType.Directory
               ? "directory"
-              : stat.type == vscode.FileType.SymbolicLink
+              : stat.type === vscode.FileType.SymbolicLink
                 ? "symlink"
                 : undefined,
       };
