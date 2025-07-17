@@ -2,7 +2,7 @@
   "name": "docs",
   "type": "module",
   "private": true,
-  "version": "2.3.3",
+  "version": "2.3.4",
   "license": "MIT",
   "scripts": {
     "build": "astro build",
