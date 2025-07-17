@@ -2,7 +2,7 @@
 
 Friendly wrapper around the [Playwright](https://playwright.dev/) for the GenAIScript runtime.
 
-- [Documentation](https://microsoft.github.io/genaiscript/runtime/playwright/)
+- [Documentation](https://microsoft.github.io/genaiscript/runtime/plugin-playwright/)
 
 ## Trademarks
 

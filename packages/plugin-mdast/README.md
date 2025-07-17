@@ -2,7 +2,7 @@
 
 Friendly wrapper around mdast, unified, remark parsers for the GenAIScript runtime.
 
-- [Documentation](https://microsoft.github.io/genaiscript/)
+- [Documentation](https://microsoft.github.io/genaiscript/runtime/plugin-mdast/)
 
 ## Trademarks
 

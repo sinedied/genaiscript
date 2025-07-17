@@ -2,7 +2,7 @@
 
 Friendly wrapper around the [Z3 solver](https://github.com/Z3Prover/z3) for the GenAIScript runtime.
 
-- [Documentation](https://microsoft.github.io/genaiscript/runtime/z3/)
+- [Documentation](https://microsoft.github.io/genaiscript/runtime/plugin-z3/)
 
 ## Trademarks
 

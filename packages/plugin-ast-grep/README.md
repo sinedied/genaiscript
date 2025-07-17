@@ -1,8 +1,8 @@
 # GenAIScript ast-grep
 
-Friendly wrapper around ast-grep for the GenAIScript runtime.
+Friendly wrapper around [ast-grep](https://ast-grep.github.io) for the GenAIScript runtime.
 
-- [Documentation](https://microsoft.github.io/genaiscript/)
+- [Documentation](https://microsoft.github.io/genaiscript/runtime/plugin-ast-grep/)
 
 ## Trademarks
 

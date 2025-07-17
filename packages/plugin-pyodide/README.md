@@ -2,7 +2,7 @@
 
 Friendly wrapper around the [Pyodide](https://pyodide.org/en/stable/) for the GenAIScript runtime.
 
-- [Documentation](https://microsoft.github.io/genaiscript/runtime/pyodide/)
+- [Documentation](https://microsoft.github.io/genaiscript/runtime/plugin-pyodide/)
 
 ## Trademarks
 

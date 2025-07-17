@@ -1,8 +1,8 @@
 # GenAIScript mermaid
 
-Friendly wrapper around mermaidjs for the GenAIScript runtime.
+Friendly wrapper around [MermaidJS](https://mermaid-js.github.io/mermaid/) for the GenAIScript runtime.
 
-- [Documentation](https://microsoft.github.io/genaiscript/)
+- [Documentation](https://microsoft.github.io/genaiscript/runtime/plugin-mermaid/)
 
 ## Trademarks
 
