@@ -186,7 +186,7 @@ export async function runTemplate(
       disposables,
       cache,
       metadata,
-      renderChatMessages,
+      disableChatPreview,
     } = await expandTemplate(prj, template, options, env);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { output, generator, secrets, dbg: envDbg, ...restEnv } = env;
@@ -268,7 +268,7 @@ export async function runTemplate(
       fallbackTools,
       metadata,
       stats: runStats,
-      renderChatMessages,
+      disableChatPreview,
     };
     const chatResult = await executeChatSession(
       connection.configuration,

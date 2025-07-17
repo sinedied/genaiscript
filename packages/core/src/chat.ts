@@ -1114,7 +1114,7 @@ export async function executeChatSession(
     inner,
     metadata,
     partialCb,
-    renderChatMessages,
+    disableChatPreview,
   } = genOptions;
   assert(!!model, "model is required");
 
@@ -1246,7 +1246,7 @@ export async function executeChatSession(
               await renderMessagesToTerminal(req, {
                 user: true,
                 tools,
-                preview: renderChatMessages,
+                preview: disableChatPreview !== true,
               }),
             );
 

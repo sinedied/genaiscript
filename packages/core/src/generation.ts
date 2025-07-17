@@ -43,5 +43,5 @@ export interface GenerationOptions
   stats: GenerationStats; // Statistics of the generation
   userState: Record<string, unknown>;
   applyGitIgnore?: boolean;
-  renderChatMessages?: boolean;
+  disableChatPreview?: boolean; // default false
 }
