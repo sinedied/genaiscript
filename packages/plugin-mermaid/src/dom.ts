@@ -5,7 +5,7 @@ import { genaiscriptDebug } from "@genaiscript/core";
 
 const dbg = genaiscriptDebug("dom");
 
-export async function installWindow() {
+export async function installWindow(): Promise<void> {
   const glb = globalThis as any; // Get the global context
   if (glb.window) return;
 
