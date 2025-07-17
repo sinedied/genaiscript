@@ -9,7 +9,7 @@ import type { PromptScript } from "../../core/src/types";
 import { createScript } from "../../core/src/scripts";
 import { copyPrompt } from "../../core/src/copy";
 
-export function activatePromptCommands(state: ExtensionState) {
+export function activatePromptCommands(state: ExtensionState): void {
   const { context, host } = state;
   const { subscriptions } = context;
 

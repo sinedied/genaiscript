@@ -10,6 +10,7 @@ import { randomHex } from "../../core/src/crypto";
 
 export async function createWebview(state: ExtensionState): Promise<vscode.WebviewPanel> {
   const { host, sessionApiKey, context } = state;
+  const { authority } = host.server;
   const { externalUrl, cspUrl } = await host.server.client();
 
   const panel = vscode.window.createWebviewPanel(TOOL_ID, TOOL_NAME, vscode.ViewColumn.One, {
@@ -43,12 +44,11 @@ export async function createWebview(state: ExtensionState): Promise<vscode.Webvi
 <body><iframe sandbox="allow-scripts allow-same-origin allow-forms" src="${externalUrl}?view=results"></iframe></body>
 </html>`;
   } else {
-    const { authority } = host.server;
     const authorityUri = await vscode.env.asExternalUri(vscode.Uri.parse(authority));
     const faviconUri = Utils.joinPath(authorityUri, "favicon.svg");
-    const stylesheetUri = Utils.joinPath(authorityUri, "built/markdown.css");
-    const codeIconsUri = Utils.joinPath(authorityUri, "built/codicon.css");
-    const scriptUri = Utils.joinPath(authorityUri, "built/web.mjs");
+    const stylesheetUri = Utils.joinPath(authorityUri, "dist/markdown.css");
+    const codeIconsUri = Utils.joinPath(authorityUri, "dist/codicon.css");
+    const scriptUri = Utils.joinPath(authorityUri, "dist/web.mjs");
     const wsCspUrl = vscode.Uri.parse(cspUrl).with({ scheme: "ws" }).toString();
     // lock down CSP
     const csp = `

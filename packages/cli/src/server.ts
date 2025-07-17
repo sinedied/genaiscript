@@ -1,10 +1,11 @@
+/* eslint-disable no-param-reassign */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import { WebSocketServer } from "ws";
 import { runPromptScriptTests } from "./test.js";
-import { PROMPTFOO_VERSION, NodeHost } from "@genaiscript/runtime";
+import { PROMPTFOO_VERSION, type NodeHost } from "@genaiscript/runtime";
 import { runScriptInternal } from "@genaiscript/api";
 import type {
   ChatCancel,
@@ -58,7 +59,7 @@ import {
   unthink,
   getModulePaths,
   sanitizeFilename,
-  resolveRuntimeHost
+  resolveRuntimeHost,
 } from "@genaiscript/core";
 import { createReadStream } from "node:fs";
 import { URL } from "node:url";
@@ -659,31 +660,31 @@ window.vscodeWebviewPlaygroundNonce = ${JSON.stringify(nonce)};
       res.write(html);
       res.statusCode = 200;
       res.end();
-    } else if (method === "GET" && route === "/built/markdown.css") {
+    } else if (method === "GET" && route === "/dist/markdown.css") {
       res.setHeader("Content-Type", "text/css");
       res.statusCode = 200;
       const filePath = join(dirname, "markdown.css");
       const stream = createReadStream(filePath);
       stream.pipe(res);
-    } else if (method === "GET" && route === "/built/codicon.css") {
+    } else if (method === "GET" && route === "/dist/codicon.css") {
       res.setHeader("Content-Type", "text/css");
       res.statusCode = 200;
       const filePath = join(dirname, "codicon.css");
       const stream = createReadStream(filePath);
       stream.pipe(res);
-    } else if (method === "GET" && route === "/built/codicon.ttf") {
+    } else if (method === "GET" && route === "/dist/codicon.ttf") {
       res.setHeader("Content-Type", "font/ttf");
       res.statusCode = 200;
       const filePath = join(dirname, "codicon.ttf");
       const stream = createReadStream(filePath);
       stream.pipe(res);
-    } else if (method === "GET" && route === "/built/web.mjs") {
+    } else if (method === "GET" && route === "/dist/web.mjs") {
       res.setHeader("Content-Type", "application/javascript");
       res.statusCode = 200;
       const filePath = join(dirname, "web.mjs");
       const stream = createReadStream(filePath);
       stream.pipe(res);
-    } else if (method === "GET" && route === "/built/web.mjs.map") {
+    } else if (method === "GET" && route === "/dist/web.mjs.map") {
       const filePath = join(dirname, "web.mjs.map");
       if (await tryStat(filePath)) {
         res.setHeader("Content-Type", "text/json");
