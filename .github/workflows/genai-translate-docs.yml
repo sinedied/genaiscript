@@ -22,13 +22,20 @@ jobs:
         with:
           node-version: "22"
           cache: pnpm
+      - uses: actions/cache@v4
+        with:
+          path: .genaiscript/cache/**
+          key: continuous-translation-${{ github.run_id }}
+          restore-keys: |
+            continuous-translation-          
       - run: pnpm install --frozen-lockfile
       - name: build
         run: pnpm build
-      - name: translate
-        run: node packages/cli/dist/src/index.js run mdtranslator "docs/src/content/docs/**/*" --out-output $GITHUB_STEP_SUMMARY -p github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pelikhan/action-continuous-translation@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          lang: fr,es        
+          files: docs/src/content/docs/**/*
       - name: build
         run: pnpm build
       - uses: stefanzweifel/git-auto-commit-action@v5
