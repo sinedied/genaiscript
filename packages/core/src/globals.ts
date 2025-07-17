@@ -167,7 +167,9 @@ export function installGlobals() {
   });
 
   // Polyfill for Object.groupBy if not available
+  // eslint-disable-next-line n/no-unsupported-features/es-builtins, n/no-unsupported-features/es-syntax
   if (!Object.groupBy) {
+    // eslint-disable-next-line n/no-unsupported-features/es-builtins, n/no-unsupported-features/es-syntax
     Object.groupBy = function <T, K extends string | number | symbol>(
       items: T[],
       callback: (item: T, index: number, array: T[]) => K,
