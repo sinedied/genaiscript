@@ -171,6 +171,7 @@ export async function createFetch(
         dbgr(`status %d not in retryOn %o, not retrying`, status, retryOn);
         return false;
       }
+      dbgr(`headers: %O`, response?.headers);
       const retryAfter = parseRetryAfterHeader(response);
       if (!isNaN(maxRetryAfter) && retryAfter > maxRetryAfter) {
         dbgr(
@@ -193,10 +194,15 @@ export async function createFetch(
         // Fallback to exponential backoff if retry-after parsing failed
         delay = Math.max(
           minDelay,
-          Math.min(maxDelay, Math.pow(FETCH_RETRY_GROWTH_FACTOR, attempt) * retryDelay) *
-            (1 + Math.random() / 20),
+          Math.min(
+            maxDelay,
+            Math.ceil(
+              Math.pow(FETCH_RETRY_GROWTH_FACTOR, attempt) * Math.max(retryDelay, minDelay),
+            ) *
+              (1 + Math.random() / 20),
+          ),
         );
-        dbgr(`using exponential backoff: %d`, delay);
+        dbgr(`using exponential backoff: %s`, prettyDuration(delay));
       }
       const msg = prettyStrings(
         `retry #${attempt + 1} in ${prettyDuration(delay)}`,

@@ -80,6 +80,7 @@ export function prettyParenthesized(value: unknown) {
  * @returns A formatted string representing the duration.
  */
 export function prettyDuration(ms: number) {
+  if (isNaN(ms)) return "";
   const prefix = "";
   if (ms < 10000) return `${prefix}${Math.ceil(ms)}ms`;
   if (ms < 60 * 1000) return `${prefix}${(ms / 1000).toFixed(1)}s`;
@@ -94,7 +95,7 @@ export function prettyDuration(ms: number) {
  * @returns The formatted cost as a string, using cents or dollars.
  */
 export function prettyCost(value: number) {
-  if (!value) return "";
+  if (!value || isNaN(value)) return "";
   return value <= 0.01
     ? `${(value * 100).toFixed(3)}¢`
     : value <= 0.1
