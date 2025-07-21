@@ -488,6 +488,7 @@ export async function cli(): Promise<void> {
 
   const openapi = program
     .command("webapi")
+    .alias("openapi")
     .option("-n, --network", "Opens server on 0.0.0.0 to make it accessible on the network")
     .option("--port <number>", `Specify the port number, default: ${SERVER_PORT}`)
     .option(

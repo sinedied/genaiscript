@@ -626,7 +626,7 @@ Options:
 ## `webapi`
 
 ```
-Usage: genaiscript webapi [options]
+Usage: genaiscript webapi|openapi [options]
 
 Starts an Web API server that exposes scripts as REST endpoints (OpenAPI 3.1
 compatible)
