@@ -8,7 +8,8 @@ import { genaiscriptDebug } from "@genaiscript/core";
 const dbg = genaiscriptDebug("mdast:gfm:alerts");
 
 /**
- * GitHub alert types supported by the plugin
+ * GitHub alert types supported by the plugin.
+ * @see https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
  */
 export type GitHubAlertType = "NOTE" | "TIP" | "IMPORTANT" | "WARNING" | "CAUTION";
 
