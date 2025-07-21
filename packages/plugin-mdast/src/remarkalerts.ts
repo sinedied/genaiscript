@@ -7,6 +7,13 @@ import { visit } from "unist-util-visit";
 import { genaiscriptDebug } from "@genaiscript/core";
 const dbg = genaiscriptDebug("mdast:gfm:alerts");
 
+declare module "mdast" {
+  interface RootContentMap {
+    githubAlertMarker: GitHubAlertMarker;
+  }
+}
+
+
 /**
  * GitHub alert types supported by the plugin.
  * @see https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
@@ -55,7 +62,7 @@ export interface RemarkGitHubAlertsOptions {
  * Regular expression to match GitHub alert syntax
  * Matches: [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
  */
-const GITHUB_ALERT_REGEX = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i;
+const GITHUB_ALERT_REGEX = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\n?/i;
 
 /**
  * Remark plugin that parses GitHub alerts and splits paragraph content into multiple text nodes.
