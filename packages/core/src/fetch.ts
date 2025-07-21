@@ -114,7 +114,7 @@ export async function createFetch(
     maxDelay = FETCH_RETRY_MAX_DELAY_DEFAULT,
     maxRetryAfter = FETCH_RETRY_MAX_RETRY_AFTER_DEFAULT,
     cancellationToken,
-  } = options;
+  } = options || {};
   const minDelay = FETCH_RETRY_MIN_DELAY_DEFAULT;
 
   dbg(`create fetch`);

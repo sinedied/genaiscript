@@ -22,13 +22,13 @@ describe("parseRetryAfter", () => {
   });
 
   test("handles invalid input", () => {
-    assert.strictEqual(parseRetryAfter(""), null);
-    assert.strictEqual(parseRetryAfter("invalid"), null);
-    assert.strictEqual(parseRetryAfter("not-a-date"), null);
+    assert.strictEqual(parseRetryAfter(""), undefined);
+    assert.strictEqual(parseRetryAfter("invalid"), undefined);
+    assert.strictEqual(parseRetryAfter("not-a-date"), undefined);
   });
 
   test("handles negative seconds", () => {
-    assert.strictEqual(parseRetryAfter("-10"), null);
+    assert.strictEqual(parseRetryAfter("-10"), undefined);
   });
 
   test("handles past dates", () => {
