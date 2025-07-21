@@ -22,6 +22,7 @@ import {
   CHAR_FLOPPY_DISK,
   CHAR_UP_DOWN_ARROWS,
   MODEL_PRICINGS,
+  MODEL_PROVIDER_GITHUB,
 } from "./constants.js";
 import { prettyCost, prettyTokensPerSecond, prettyDuration, prettyTokens } from "./pretty.js";
 import { genaiscriptDebug } from "./debug.js";
@@ -40,11 +41,20 @@ export function estimateCost(modelId: string, usage: ChatCompletionUsage) {
 
   const { completion_tokens, prompt_tokens } = usage;
   let { provider, model } = parseModelIdentifier(modelId);
+
+  if (provider === MODEL_PROVIDER_GITHUB) {
+    if (/^openai\//.test(model)) {
+      dbg(`patch %s -> %s`, modelId, model);
+      model = model.replace(/^openai\//, "");
+    }
+  }
+
   let mid = `${provider}:${model}`.toLowerCase();
   let cost = MODEL_PRICINGS[mid];
   if (!cost) {
+    // match specific model names
     const m = model.match(
-      /^gpt-(3\.5|4|4o|o1|o3|o4|o4-mini|o1-mini|o1-preview|4o-mini|o3-mini|4\.1|4\.1-mini|4\.1-nano)/,
+      /^(gpt-(3\.5|4|4o|4\.1|4\.1-mini|4\.1-nano)|o1|o3|o4|o4-mini|o1-mini|o3-mini|o1-preview|4o-mini)/,
     );
     if (m) {
       model = m[0];

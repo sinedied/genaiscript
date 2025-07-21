@@ -13,9 +13,17 @@ describe("usage", () => {
         completion_tokens: 50,
         total_tokens: 150,
       };
-      const cost = estimateCost("openai:chatgpt-4o-latest", usage);
-      assert(typeof cost === "number");
-      assert.strictEqual(cost, 0.00075);
+      for (const model of [
+        "openai:chatgpt-4o-latest",
+        "github:gpt-4o",
+        "github:openai/gpt-4o",
+        "azure:gpt-4o",
+      ]) {
+        console.log(model);
+        const cost = estimateCost(model, usage);
+        assert(typeof cost === "number");
+        assert.strictEqual(cost, 0.00075);
+      }
     });
 
     test("should match model pattern when exact model not found", () => {
