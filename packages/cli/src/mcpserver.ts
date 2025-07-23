@@ -44,7 +44,6 @@ import { applyRemoteOptions } from "./remote.js";
 import type { RemoteOptions } from "./remote.js";
 import { startProjectWatcher } from "./watch.js";
 import { findOpenPort } from "./port.js";
-import { workerData } from "worker_threads";
 const dbg = genaiscriptDebug("mcp:server");
 
 /**
@@ -78,7 +77,6 @@ export async function startMcpServer(
   const watcher = await startProjectWatcher(options);
   logVerbose(`mcp server: watching ${watcher.cwd}`);
   const { Server } = await import("@modelcontextprotocol/sdk/server/index.js");
-  const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
   const { CallToolRequestSchema, ListToolsRequestSchema } = await import(
     "@modelcontextprotocol/sdk/types.js"
   );
@@ -267,88 +265,93 @@ export async function startMcpServer(
     // HTTP transport setup
     const port = await findOpenPort(portStr ? normalizeInt(portStr) : SERVER_PORT, options);
     const host = network ? "0.0.0.0" : "127.0.0.1";
-    
+
     dbg(`resolved HTTP server config: host=${host}, port=${port}, network=${network}`);
     logVerbose(`mcp server: starting HTTP server on ${host}:${port}`);
-    
+
     try {
       dbg(`importing Fastify modules`);
       const createFastify = (await import("fastify")).default;
       const fastifyCors = (await import("@fastify/cors")).default;
-      
+
       // Import HTTP transport
       dbg(`importing StreamableHTTPServerTransport`);
       const { StreamableHTTPServerTransport } = await import(
         "@modelcontextprotocol/sdk/server/streamableHttp.js"
       );
-      
+
       // Store transports for session management
-      const transports = {} as Record<string, StreamableHTTPServerTransport>;
-      
+      const transports = {} as Record<string, any>;
+
       dbg(`creating Fastify server with proxy support`);
       // Create Fastify server with proxy trust configuration
-      const fastify = createFastify({ 
+      const fastify = createFastify({
         logger: false,
         trustProxy: true, // Enable proxy support for X-Forwarded-* headers
       });
-      
+
       // Register CORS support with proxy-aware configuration
       dbg(`registering CORS support with proxy awareness`);
       await fastify.register(fastifyCors, {
         origin: true, // Allow dynamic origin based on request headers (proxy-friendly)
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Forwarded-Proto', 'X-Forwarded-Host'],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: [
+          "Content-Type",
+          "Authorization",
+          "X-Forwarded-For",
+          "X-Forwarded-Proto",
+          "X-Forwarded-Host",
+        ],
         credentials: false, // Keep false for security when using dynamic origin
       });
-      
+
       // MCP endpoint handler with proxy support
       dbg(`registering MCP endpoint handler with proxy awareness`);
-      fastify.all('/mcp', async (request, reply) => {
+      fastify.all("/mcp", async (request, reply) => {
         // Log client information (proxy-aware)
         const clientIP = request.ip; // Fastify automatically uses X-Forwarded-For when trustProxy is enabled
         const protocol = request.protocol; // Respects X-Forwarded-Proto
         const host = request.hostname; // Respects X-Forwarded-Host
-        
-        dbg(`received HTTP request: ${request.method} ${request.url} from ${clientIP} (${protocol}://${host})`);
-        
+
+        dbg(
+          `received HTTP request: ${request.method} ${request.url} from ${clientIP} (${protocol}://${host})`,
+        );
+
         // Handle OPTIONS preflight requests
-        if (request.method === 'OPTIONS') {
+        if (request.method === "OPTIONS") {
           dbg(`handling OPTIONS request from ${clientIP}`);
           reply.status(200).send();
           return;
         }
-        
+
         dbg(`handling MCP endpoint request from ${clientIP}`);
         try {
           // Get raw Node.js request and response objects for MCP transport
           const req = request.raw;
           const res = reply.raw;
-          
-          const transport = new StreamableHTTPServerTransport(req, res);
-          
-          // Add error handling for transport
-          if (transport.on) {
-            transport.on('error', (error) => {
-              dbg(`transport error for client ${clientIP}: ${errorMessage(error)}`);
-            });
-          }
-          
-          // Store transport for session management  
-          if ('sessionId' in transport) {
+
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: undefined,
+          });
+
+          // Store transport for session management
+          if ("sessionId" in transport) {
             dbg(`storing transport with sessionId: ${transport.sessionId} for client ${clientIP}`);
             transports[transport.sessionId] = transport;
-            
+
             res.on("close", () => {
               dbg(`transport session closed: ${transport.sessionId} (client: ${clientIP})`);
               delete transports[transport.sessionId];
             });
-            
+
             res.on("error", (error) => {
-              dbg(`response error for session ${transport.sessionId} (client: ${clientIP}): ${errorMessage(error)}`);
+              dbg(
+                `response error for session ${transport.sessionId} (client: ${clientIP}): ${errorMessage(error)}`,
+              );
               delete transports[transport.sessionId];
             });
           }
-          
+
           dbg(`connecting server with HTTP transport for client ${clientIP}`);
           await server.connect(transport);
         } catch (error) {
@@ -356,51 +359,53 @@ export async function startMcpServer(
           reply.status(500).send({ error: errorMessage(error) });
         }
       });
-      
+
       // Health check endpoint for proxies and load balancers
       dbg(`registering health check endpoint`);
-      fastify.get('/health', async (request, reply) => {
+      fastify.get("/health", async (request, reply) => {
         const clientIP = request.ip;
         dbg(`health check request from ${clientIP}`);
-        reply.status(200).send({ 
-          status: 'ok', 
-          service: 'genaiscript-mcp-server',
+        reply.status(200).send({
+          status: "ok",
+          service: "genaiscript-mcp-server",
           version: CORE_VERSION,
-          transport: 'http'
+          transport: "http",
         });
       });
-      
+
       // 404 handler for other paths
       fastify.setNotFoundHandler((request, reply) => {
         const clientIP = request.ip;
         dbg(`request to unknown path: ${request.url} from ${clientIP}`);
-        reply.status(404).send({ error: 'Not found. Use /mcp endpoint for MCP protocol or /health for health checks.' });
+        reply.status(404).send({
+          error: "Not found. Use /mcp endpoint for MCP protocol or /health for health checks.",
+        });
       });
-      
+
       // Global error handler
       fastify.setErrorHandler((error, request, reply) => {
         dbg(`Fastify error: ${errorMessage(error)}`);
         logVerbose(`HTTP server error: ${errorMessage(error)}`);
-        reply.status(error.statusCode || 500).send({ 
-          error: errorMessage(error) 
+        reply.status(error.statusCode || 500).send({
+          error: errorMessage(error),
         });
       });
-      
+
       // Start Fastify server
       dbg(`starting Fastify server on ${host}:${port}`);
       await fastify.listen({
         port,
         host,
       });
-      
+
       dbg(`Fastify server listening on ${host}:${port} with proxy support`);
       console.log(`GenAIScript MCP server v${CORE_VERSION}`);
       console.log(`│ Transport: HTTP (proxy-aware)`);
       console.log(`│ Endpoint: http://${host}:${port}/mcp`);
       console.log(`│ Health: http://${host}:${port}/health`);
-      console.log(`│ Access: ${network ? 'Network (0.0.0.0)' : 'Local (127.0.0.1)'}`);
+      console.log(`│ Access: ${network ? "Network (0.0.0.0)" : "Local (127.0.0.1)"}`);
       console.log(`│ Proxy: Trusted (X-Forwarded-* headers supported)`);
-      
+
       if (startup) {
         dbg(`running startup script: ${startup}`);
         logVerbose(`startup script: ${startup}`);
@@ -422,10 +427,11 @@ export async function startMcpServer(
     dbg(`using stdio transport`);
     // Stdio transport (default)
     logVerbose(`mcp server: using stdio transport`);
+    const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
     const transport = new StdioServerTransport();
     dbg(`connecting server with stdio transport`);
     await server.connect(transport);
-    
+
     if (startup) {
       dbg(`running startup script: ${startup}`);
       logVerbose(`startup script: ${startup}`);
