@@ -65,7 +65,7 @@ describe("git worktree", () => {
 
   test("should add and remove a worktree", async () => {
     // Use main branch instead of current branch to avoid conflicts
-    const mainBranch = "refs/heads/copilot/fix-b6156011-731d-47e4-8aaf-d0eff9d9594a";
+    const mainBranch = "origin/test-ignore";
 
     // Add worktree
     const worktreeClient = await gitClient.addWorktree(worktreePath, mainBranch);
