@@ -185,7 +185,7 @@ export type CreateImageRequest = {
   size?: string;
   style?: string;
   outputFormat?: "png" | "jpeg" | "webp";
-  mode?: "generate" | "edit" | "variations";
+  mode?: "generate" | "edit";
   image?: BufferLike;
   mask?: BufferLike;
 };

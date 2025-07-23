@@ -1055,9 +1055,6 @@ export function createChatGenerationContext(
       if (mode === "edit" && !image) {
         throw new Error("Image is required for edit mode");
       }
-      if (mode === "variations" && !image) {
-        throw new Error("Image is required for variations mode");
-      }
 
       const req = deleteUndefinedValues({
         model: configuration.model,

@@ -109,7 +109,7 @@ describe("Image Generation", () => {
 
   test("ImageGenerationOptions supports new fields", () => {
     const options: ImageGenerationOptions = {
-      mode: "variations",
+      mode: "edit",
       image: testImagePath,
       mask: testImagePath,
       quality: "high",
@@ -117,7 +117,7 @@ describe("Image Generation", () => {
       model: "openai:gpt-image-1",
     };
 
-    expect(options.mode).toBe("variations");
+    expect(options.mode).toBe("edit");
     expect(options.image).toBe(testImagePath);
     expect(options.mask).toBe(testImagePath);
   });
@@ -131,18 +131,6 @@ describe("Image Generation", () => {
     };
 
     expect(req.mode).toBe("edit");
-    expect(req.image).toBeUndefined();
-  });
-
-  test("validates variations mode requires image", () => {
-    const req: CreateImageRequest = {
-      model: "openai:gpt-image-1",
-      prompt: "Create variations",
-      mode: "variations",
-      // missing image field
-    };
-
-    expect(req.mode).toBe("variations");
     expect(req.image).toBeUndefined();
   });
 
@@ -160,7 +148,7 @@ describe("Image Generation", () => {
     expect(req.mask).toBeUndefined();
   });
 
-  test("supports all generation modes", () => {
+  test("supports generation modes", () => {
     const generateReq: CreateImageRequest = {
       model: "openai:gpt-image-1",
       prompt: "Generate image",
@@ -174,16 +162,8 @@ describe("Image Generation", () => {
       image: testImagePath,
     };
 
-    const variationsReq: CreateImageRequest = {
-      model: "openai:gpt-image-1",
-      prompt: "Create variations",
-      mode: "variations",
-      image: testImagePath,
-    };
-
     expect(generateReq.mode).toBe("generate");
     expect(editReq.mode).toBe("edit");
-    expect(variationsReq.mode).toBe("variations");
   });
 
   test("mask is optional for edit mode", () => {

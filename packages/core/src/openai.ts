@@ -761,14 +761,6 @@ export async function OpenAIImageGeneration(
         error: serializeError(new Error("Image is required for edit mode")),
       };
     }
-  } else if (mode === "variations") {
-    endpoint = "variations";
-    if (!image) {
-      return {
-        image: undefined,
-        error: serializeError(new Error("Image is required for variations mode")),
-      };
-    }
   }
 
   let url = `${cfg.base}/images/${endpoint}`;
@@ -778,8 +770,8 @@ export async function OpenAIImageGeneration(
   const isDallE3 = /^dall-e-3/i.test(model);
   const isGpt = /^gpt-image/i.test(model);
 
-  // For edit and variations modes, we need to use multipart form data
-  const isMultipart = mode === "edit" || mode === "variations";
+  // For edit mode, we need to use multipart form data
+  const isMultipart = mode === "edit";
 
   // Process parameters common to all modes
   const processedParams = {
@@ -850,7 +842,7 @@ export async function OpenAIImageGeneration(
     // Add model
     body.append("model", model);
 
-    // Add prompt (required for edit mode, not used for variations)
+    // Add prompt (required for edit mode)
     if (mode === "edit") {
       body.append("prompt", prompt);
     }
