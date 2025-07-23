@@ -781,6 +781,45 @@ export async function OpenAIImageGeneration(
   // For edit and variations modes, we need to use multipart form data
   const isMultipart = mode === "edit" || mode === "variations";
 
+  // Process parameters common to all modes
+  const processedParams = {
+    size: size,
+    quality: quality,
+    style: style,
+    outputFormat: outputFormat,
+  };
+
+  // Transform size parameter based on model
+  if (processedParams.size && processedParams.size !== "auto") {
+    if (isDallE3) {
+      if (processedParams.size === "portrait") processedParams.size = "1024x1792";
+      else if (processedParams.size === "landscape") processedParams.size = "1792x1024";
+      else if (processedParams.size === "square") processedParams.size = "1024x1024";
+    } else if (isDallE2) {
+      if (processedParams.size === "portrait" || processedParams.size === "landscape" || processedParams.size === "square")
+        processedParams.size = "1024x1024";
+    } else if (isGpt) {
+      if (processedParams.size === "portrait") processedParams.size = "1024x1536";
+      else if (processedParams.size === "landscape") processedParams.size = "1536x1024";
+      else if (processedParams.size === "square") processedParams.size = "1024x1024";
+    }
+  }
+
+  // Transform quality parameter based on model
+  if (processedParams.quality && processedParams.quality !== "auto") {
+    if (isDallE3 && processedParams.quality === "high") {
+      processedParams.quality = "hd";
+    } else if (isGpt && processedParams.quality === "hd") {
+      processedParams.quality = "high";
+    }
+  }
+
+  // Filter out parameters that shouldn't be included for certain models
+  const shouldIncludeQuality = processedParams.quality && processedParams.quality !== "auto" && !isDallE2;
+  const shouldIncludeStyle = processedParams.style && isDallE3;
+  const shouldIncludeOutputFormat = processedParams.outputFormat && isGpt;
+  const shouldIncludeSize = processedParams.size && processedParams.size !== "auto";
+
   let body: any;
   let headers: any = {
     ...getConfigHeaders(cfg),
@@ -816,37 +855,21 @@ export async function OpenAIImageGeneration(
       body.append("prompt", prompt);
     }
 
-    // Add other parameters
-    if (size && size !== "auto") {
-      let finalSize = size;
-      if (isDallE3) {
-        if (size === "portrait") finalSize = "1024x1792";
-        else if (size === "landscape") finalSize = "1792x1024";
-        else if (size === "square") finalSize = "1024x1024";
-      } else if (isDallE2) {
-        if (size === "portrait" || size === "landscape" || size === "square")
-          finalSize = "1024x1024";
-      } else if (isGpt) {
-        if (size === "portrait") finalSize = "1024x1536";
-        else if (size === "landscape") finalSize = "1536x1024";
-        else if (size === "square") finalSize = "1024x1024";
-      }
-      body.append("size", finalSize);
+    // Add processed parameters
+    if (shouldIncludeSize) {
+      body.append("size", processedParams.size);
     }
 
-    if (quality && quality !== "auto") {
-      let finalQuality = quality;
-      if (isDallE3 && quality === "high") finalQuality = "hd";
-      else if (isGpt && quality === "hd") finalQuality = "high";
-      if (!isDallE2) body.append("quality", finalQuality);
+    if (shouldIncludeQuality) {
+      body.append("quality", processedParams.quality);
     }
 
-    if (style && isDallE3) {
-      body.append("style", style);
+    if (shouldIncludeStyle) {
+      body.append("style", processedParams.style);
     }
 
-    if (outputFormat && isGpt) {
-      body.append("output_format", outputFormat);
+    if (shouldIncludeOutputFormat) {
+      body.append("output_format", processedParams.outputFormat);
     }
 
     // Always request b64_json for response format
@@ -858,37 +881,29 @@ export async function OpenAIImageGeneration(
     body = {
       model,
       prompt,
-      size,
-      quality,
-      style,
       ...rest,
     };
 
-    // auto is the default quality, so always delete it
-    if (body.quality === "auto" || isDallE2) delete body.quality;
-    if (isDallE3) {
-      if (body.quality === "high") body.quality = "hd";
-      else delete body.quality;
-    }
-    if (isGpt && body.quality === "hd") body.quality = "high";
-    if (!isDallE3) delete body.style;
-    if (isDallE) body.response_format = "b64_json";
-
-    if (isDallE3) {
-      if (body.size === "portrait") body.size = "1024x1792";
-      else if (body.size === "landscape") body.size = "1792x1024";
-      else if (body.size === "square") body.size = "1024x1024";
-    } else if (isDallE2) {
-      if (body.size === "portrait" || body.size === "landscape" || body.size === "square")
-        body.size = "1024x1024";
-    } else if (isGpt) {
-      if (body.size === "portrait") body.size = "1024x1536";
-      else if (body.size === "landscape") body.size = "1536x1024";
-      else if (body.size === "square") body.size = "1024x1024";
-      if (outputFormat) body.output_format = outputFormat;
+    // Add processed parameters
+    if (shouldIncludeSize) {
+      body.size = processedParams.size;
     }
 
-    if (body.size === "auto") delete body.size;
+    if (shouldIncludeQuality) {
+      body.quality = processedParams.quality;
+    }
+
+    if (shouldIncludeStyle) {
+      body.style = processedParams.style;
+    }
+
+    if (shouldIncludeOutputFormat) {
+      body.output_format = processedParams.outputFormat;
+    }
+
+    if (isDallE) {
+      body.response_format = "b64_json";
+    }
 
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(body);
