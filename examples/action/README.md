@@ -36,7 +36,7 @@
 Add the following to your step in your workflow file:
 
 ```yaml
-uses: microsoft/genaiscript@main
+uses: sinedied/genaiscript@main
 with:
   github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -68,7 +68,7 @@ jobs:
           key: genaiscript-${{ github.run_id }}
           restore-keys: |
             genaiscript-
-      - uses: microsoft/genaiscript@v0 # update to the major version you want to use
+      - uses: sinedied/genaiscript@v0 # update to the major version you want to use
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```

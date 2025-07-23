@@ -4523,6 +4523,27 @@
    * For gpt-image-1 only, the type of image format to generate.
    */
   outputFormat?: "png" | "jpeg" | "webp";
+
+  /**
+   * Generation mode. Defaults to "generate".
+   * - "generate": Create new images from text prompts
+   * - "edit": Edit existing images using text prompts and optional masks
+   * - "variations": Create variations of existing images
+   */
+  mode?: "generate" | "edit" | "variations";
+
+  /**
+   * Input image for edit and variations modes.
+   * Required for "edit" and "variations" modes.
+   */
+  image?: BufferLike;
+
+  /**
+   * Mask image for edit mode (optional).
+   * Used to specify which parts of the image to edit.
+   * Only applicable in "edit" mode.
+   */
+  mask?: BufferLike;
 }
 
  interface TranscriptionOptions extends CacheOptions, RetryOptions {

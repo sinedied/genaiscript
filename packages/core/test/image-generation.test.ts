@@ -9,15 +9,73 @@ import { ImageGenerationOptions } from "../src/types.js";
 const createTestImage = (): Buffer => {
   // Minimal valid PNG file (1x1 pixel, transparent)
   const pngData = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, // PNG signature
-    0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
-    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // width: 1, height: 1
-    0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, // bit depth: 8, color type: 6 (RGBA), CRC
-    0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41, // IDAT chunk
-    0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00, // compressed data
-    0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, // CRC
-    0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, // IEND chunk
-    0x42, 0x60, 0x82
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a, // PNG signature
+    0x00,
+    0x00,
+    0x00,
+    0x0d,
+    0x49,
+    0x48,
+    0x44,
+    0x52, // IHDR chunk
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01, // width: 1, height: 1
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00,
+    0x1f,
+    0x15,
+    0xc4, // bit depth: 8, color type: 6 (RGBA), CRC
+    0x89,
+    0x00,
+    0x00,
+    0x00,
+    0x0a,
+    0x49,
+    0x44,
+    0x41, // IDAT chunk
+    0x54,
+    0x78,
+    0x9c,
+    0x63,
+    0x00,
+    0x01,
+    0x00,
+    0x00, // compressed data
+    0x05,
+    0x00,
+    0x01,
+    0x0d,
+    0x0a,
+    0x2d,
+    0xb4,
+    0x00, // CRC
+    0x00,
+    0x00,
+    0x00,
+    0x49,
+    0x45,
+    0x4e,
+    0x44,
+    0xae, // IEND chunk
+    0x42,
+    0x60,
+    0x82,
   ]);
   return pngData;
 };
@@ -41,7 +99,7 @@ describe("Image Generation", () => {
       quality: "high",
       size: "square",
       style: "vivid",
-      outputFormat: "png"
+      outputFormat: "png",
     };
 
     expect(req.mode).toBe("edit");
@@ -56,7 +114,7 @@ describe("Image Generation", () => {
       mask: testImagePath,
       quality: "high",
       size: "landscape",
-      model: "openai:gpt-image-1"
+      model: "openai:gpt-image-1",
     };
 
     expect(options.mode).toBe("variations");
@@ -68,7 +126,7 @@ describe("Image Generation", () => {
     const req: CreateImageRequest = {
       model: "openai:gpt-image-1",
       prompt: "Edit this image",
-      mode: "edit"
+      mode: "edit",
       // missing image field
     };
 
@@ -78,9 +136,9 @@ describe("Image Generation", () => {
 
   test("validates variations mode requires image", () => {
     const req: CreateImageRequest = {
-      model: "openai:gpt-image-1", 
+      model: "openai:gpt-image-1",
       prompt: "Create variations",
-      mode: "variations"
+      mode: "variations",
       // missing image field
     };
 
@@ -94,7 +152,7 @@ describe("Image Generation", () => {
       prompt: "Generate a new image",
       // mode defaults to "generate"
       quality: "high",
-      size: "square"
+      size: "square",
     };
 
     expect(req.mode).toBeUndefined(); // defaults to "generate"
@@ -106,21 +164,21 @@ describe("Image Generation", () => {
     const generateReq: CreateImageRequest = {
       model: "openai:gpt-image-1",
       prompt: "Generate image",
-      mode: "generate"
+      mode: "generate",
     };
 
     const editReq: CreateImageRequest = {
-      model: "openai:gpt-image-1", 
+      model: "openai:gpt-image-1",
       prompt: "Edit image",
       mode: "edit",
-      image: testImagePath
+      image: testImagePath,
     };
 
     const variationsReq: CreateImageRequest = {
       model: "openai:gpt-image-1",
-      prompt: "Create variations", 
+      prompt: "Create variations",
       mode: "variations",
-      image: testImagePath
+      image: testImagePath,
     };
 
     expect(generateReq.mode).toBe("generate");
@@ -134,14 +192,14 @@ describe("Image Generation", () => {
       prompt: "Edit with mask",
       mode: "edit",
       image: testImagePath,
-      mask: testImagePath
+      mask: testImagePath,
     };
 
     const reqWithoutMask: CreateImageRequest = {
       model: "openai:gpt-image-1",
-      prompt: "Edit without mask", 
+      prompt: "Edit without mask",
       mode: "edit",
-      image: testImagePath
+      image: testImagePath,
     };
 
     expect(reqWithMask.mask).toBe(testImagePath);
