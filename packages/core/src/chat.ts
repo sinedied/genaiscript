@@ -111,7 +111,6 @@ import type {
   ToolCallContext,
   ToolCallOutput,
   WorkspaceFile,
-  BufferLike,
 } from "./types.js";
 
 const dbg = genaiscriptDebug("chat");
@@ -185,9 +184,6 @@ export type CreateImageRequest = {
   size?: string;
   style?: string;
   outputFormat?: "png" | "jpeg" | "webp";
-  mode?: "generate" | "edit";
-  image?: BufferLike;
-  mask?: BufferLike;
 };
 
 export interface ImageGenerationUsage {

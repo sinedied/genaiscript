@@ -1026,8 +1026,7 @@ export function createChatGenerationContext(
 
     const imgTrace = trace?.startTraceDetails("🖼️ generate image");
     try {
-      const { style, quality, size, outputFormat, mime, mode, image, mask, ...rest } =
-        imageOptions || {};
+      const { style, quality, size, outputFormat, mime, ...rest } = imageOptions || {};
       const conn: ModelConnectionOptions = {
         model: imageOptions?.model || IMAGE_GENERATION_MODEL_ID,
       };
@@ -1050,12 +1049,6 @@ export function createChatGenerationContext(
       const { imageGenerator } = await resolveLanguageModel(configuration.provider);
       if (!imageGenerator) throw new Error("image generator not found for " + info.model);
       imgTrace?.itemValue(`model`, configuration.model);
-
-      // Validate mode-specific requirements
-      if (mode === "edit" && !image) {
-        throw new Error("Image is required for edit mode");
-      }
-
       const req = deleteUndefinedValues({
         model: configuration.model,
         prompt: dedent(prompt),
@@ -1063,9 +1056,6 @@ export function createChatGenerationContext(
         quality,
         style,
         outputFormat,
-        mode,
-        image,
-        mask,
       }) satisfies CreateImageRequest;
       const m = measure("img.generate", `${req.model} -> image`);
       const res = await imageGenerator(req, configuration, {
