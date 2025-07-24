@@ -788,7 +788,11 @@ export async function OpenAIImageGeneration(
       else if (processedParams.size === "landscape") processedParams.size = "1792x1024";
       else if (processedParams.size === "square") processedParams.size = "1024x1024";
     } else if (isDallE2) {
-      if (processedParams.size === "portrait" || processedParams.size === "landscape" || processedParams.size === "square")
+      if (
+        processedParams.size === "portrait" ||
+        processedParams.size === "landscape" ||
+        processedParams.size === "square"
+      )
         processedParams.size = "1024x1024";
     } else if (isGpt) {
       if (processedParams.size === "portrait") processedParams.size = "1024x1536";
@@ -807,7 +811,8 @@ export async function OpenAIImageGeneration(
   }
 
   // Filter out parameters that shouldn't be included for certain models
-  const shouldIncludeQuality = processedParams.quality && processedParams.quality !== "auto" && !isDallE2;
+  const shouldIncludeQuality =
+    processedParams.quality && processedParams.quality !== "auto" && !isDallE2;
   const shouldIncludeStyle = processedParams.style && isDallE3;
   const shouldIncludeOutputFormat = processedParams.outputFormat && isGpt;
   const shouldIncludeSize = processedParams.size && processedParams.size !== "auto";

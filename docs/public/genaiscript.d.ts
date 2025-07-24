@@ -4528,13 +4528,12 @@
    * Generation mode. Defaults to "generate".
    * - "generate": Create new images from text prompts
    * - "edit": Edit existing images using text prompts and optional masks
-   * - "variations": Create variations of existing images
    */
-  mode?: "generate" | "edit" | "variations";
+  mode?: "generate" | "edit";
 
   /**
-   * Input image for edit and variations modes.
-   * Required for "edit" and "variations" modes.
+   * Input image for edit mode.
+   * Required for "edit" mode.
    */
   image?: BufferLike;
 
