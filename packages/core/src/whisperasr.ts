@@ -2,12 +2,11 @@
 // Licensed under the MIT License.
 
 import { serializeError } from "serialize-error";
-import type { CancellationOptions} from "./cancellation.js";
+import type { CancellationOptions } from "./cancellation.js";
 import { toSignal } from "./cancellation.js";
 import type { CreateTranscriptionRequest, LanguageModel } from "./chat.js";
 import { MODEL_PROVIDER_WHISPERASR } from "./constants.js";
 import { traceFetchPost } from "./fetchtext.js";
-import { getConfigHeaders } from "./openai.js";
 import type { LanguageModelConfiguration } from "./server/messages.js";
 import type { TraceOptions } from "./trace.js";
 import { logVerbose, logError } from "./util.js";
@@ -15,6 +14,7 @@ import { prettyBytes } from "./pretty.js";
 import { genaiscriptDebug } from "./debug.js";
 import { isCancelError } from "./error.js";
 import type { TranscriptionResult } from "./types.js";
+import { getConfigHeaders } from "./openai-chatcompletion.js";
 const dbg = genaiscriptDebug("whisperasr");
 
 async function WhisperASRTranscribe(
