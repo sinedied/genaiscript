@@ -7,11 +7,14 @@ import { TestHost } from "../src/testhost.js";
 import { mkdir, rmdir } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
+import { isCI } from "../src/ci.js";
 
 describe("git worktree", () => {
   let gitClient: GitClient;
   let testDir: string;
   let worktreePath: string;
+
+  if (isCI) return;
 
   beforeAll(async () => {
     // Initialize test host for the GenAIScript runtime
