@@ -4,6 +4,8 @@ import { join } from "path";
 import { CreateImageRequest } from "../src/chat.js";
 import { OpenAIImageGeneration } from "../src/openai.js";
 import { ImageGenerationOptions } from "../src/types.js";
+import type { LanguageModelConfiguration } from "../src/server/messages.js";
+import { MODEL_PROVIDER_AZURE_OPENAI } from "../src/constants.js";
 
 // Create a small test image (1x1 PNG)
 const createTestImage = (): Buffer => {
@@ -184,5 +186,97 @@ describe("Image Generation", () => {
 
     expect(reqWithMask.mask).toBe(testImagePath);
     expect(reqWithoutMask.mask).toBeUndefined();
+  });
+
+  test("Azure providers reject edit mode with meaningful error", async () => {
+    const azureConfig: LanguageModelConfiguration = {
+      provider: MODEL_PROVIDER_AZURE_OPENAI,
+      model: "dall-e-3",
+      base: "https://test.openai.azure.com/openai/deployments",
+      type: "azure",
+    };
+
+    const req: CreateImageRequest = {
+      model: "dall-e-3",
+      prompt: "Edit this image",
+      mode: "edit",
+      image: testImagePath,
+    };
+
+    const result = await OpenAIImageGeneration(req, azureConfig, {});
+    
+    expect(result.image).toBeUndefined();
+    expect(result.error).toBeDefined();
+    expect(result.error).toContain("Image edit mode is not supported by Azure OpenAI");
+    expect(result.error).toContain("does not support the /images/edits endpoint");
+  });
+
+  test("Azure serverless providers reject edit mode with meaningful error", async () => {
+    const azureServerlessConfig: LanguageModelConfiguration = {
+      provider: "azure_serverless",
+      model: "dall-e-3", 
+      base: "https://test.models.ai.azure.com",
+      type: "azure_serverless",
+    };
+
+    const req: CreateImageRequest = {
+      model: "dall-e-3",
+      prompt: "Edit this image",
+      mode: "edit",
+      image: testImagePath,
+    };
+
+    const result = await OpenAIImageGeneration(req, azureServerlessConfig, {});
+    
+    expect(result.image).toBeUndefined();
+    expect(result.error).toBeDefined();
+    expect(result.error).toContain("Image edit mode is not supported by Azure OpenAI");
+  });
+
+  test("Azure type config rejects edit mode", async () => {
+    const azureTypeConfig: LanguageModelConfiguration = {
+      provider: "openai",
+      model: "dall-e-3",
+      base: "https://test.openai.azure.com/openai/deployments",
+      type: "azure", // type is azure even if provider is openai
+    };
+
+    const req: CreateImageRequest = {
+      model: "dall-e-3",
+      prompt: "Edit this image",
+      mode: "edit",
+      image: testImagePath,
+    };
+
+    const result = await OpenAIImageGeneration(req, azureTypeConfig, {});
+    
+    expect(result.image).toBeUndefined();
+    expect(result.error).toBeDefined();
+    expect(result.error).toContain("Image edit mode is not supported by Azure OpenAI");
+  });
+
+  test("non-Azure providers allow edit mode", async () => {
+    const openaiConfig: LanguageModelConfiguration = {
+      provider: "openai",
+      model: "dall-e-2",
+      base: "https://api.openai.com/v1",
+      type: "openai",
+    };
+
+    const req: CreateImageRequest = {
+      model: "dall-e-2",
+      prompt: "Edit this image", 
+      mode: "edit",
+      image: testImagePath,
+    };
+
+    // This should not reject the request due to provider validation
+    // (it may still fail due to network/auth, but not due to our validation)
+    const result = await OpenAIImageGeneration(req, openaiConfig, {});
+    
+    // If there's an error, it should not be our provider validation error
+    if (result.error) {
+      expect(result.error).not.toContain("Image edit mode is not supported by Azure OpenAI");
+    }
   });
 });

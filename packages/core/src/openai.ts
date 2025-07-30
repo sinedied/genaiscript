@@ -273,6 +273,20 @@ export async function OpenAIImageGeneration(
         error: serializeError(new Error("Image is required for edit mode")),
       };
     }
+    
+    // Validate provider support for edit mode
+    if (cfg.provider === MODEL_PROVIDER_AZURE_OPENAI || 
+        cfg.provider === MODEL_PROVIDER_AZURE_SERVERLESS_OPENAI ||
+        cfg.provider === MODEL_PROVIDER_AZURE_SERVERLESS_MODELS ||
+        cfg.type === "azure") {
+      return {
+        image: undefined,
+        error: serializeError(new Error(
+          `Image edit mode is not supported by Azure OpenAI. Azure OpenAI does not support the /images/edits endpoint. ` +
+          `Use image generation mode instead or switch to a compatible provider like OpenAI.`
+        )),
+      };
+    }
   }
 
   let url = `${cfg.base}/images/${endpoint}`;
